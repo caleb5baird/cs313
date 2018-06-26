@@ -1,0 +1,26 @@
+After completing the assignment, please answer the questions in this text file and submit it to I-Learn.
+
+1. Describe something from your database that you think came together very nicely.
+	My database design has not required any many to many tables so far. This makes my database very
+	simple and easy to understand.
+
+2. Describe something from your database that you think could be improved or extended in the future.
+	I think they could be value in making account its own table in the future.
+
+3. Briefly describe the "coolest" thing you learned while completing this assignment.
+	Before doing this assignment I did the entire tutorial. One of the coolest things that I learned
+	was the idea of creating views. And the fact that you can use inheritance in psql
+
+4. Briefly describe two principles of good database design.
+	Principle 1) Only one item per cell.
+	Principle 2) No duplicated data.
+
+5. Please select the category you feel best describes your assignment:
+E - Shows creativity and excels above and beyond requirements
+
+
+6. Provide a brief justification (1-2 sentences) for selecting that category.
+	I did not see much of an apportunity to go above and beyone the assignment, it seams like you
+	either created the table or you didn't. The only thing I could think to do was to populate some
+	of the values in the tables. So I added the users to the database.
+

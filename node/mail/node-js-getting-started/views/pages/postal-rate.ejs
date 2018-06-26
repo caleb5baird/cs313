@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<% include ../partials/header.ejs %>
+		<style type="text/css" media="screen">
+		p {
+			font-size: 20px;
+			text-align: center;
+			margin: 200px auto;
+			width: 200px;
+			border: 1px solid black;
+			border-radius: 5px;
+			padding 5px;
+		}
+		</style>
+	</head>
+	<body>
+		<% if (rate) { %>
+		<p>Your rate is $<%- rate %></p>
+		<% } else { %>
+			<p>Invalid Weight</p>
+		<% } %>
+	</body>
+</html>

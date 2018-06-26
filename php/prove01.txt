@@ -1,0 +1,38 @@
+After completing the assignment, please answer the questions in this text file and submit it to I-Learn.
+
+1. Copy and paste the URL for your Heroku web application:
+
+https://safe-lake-68036.herokuapp.com/hello.html
+
+2. Copy and paste the URL for your GitHub source code repository:
+
+https://github.com/caleb5baird/cs313
+
+3. Briefly list and describe the elements of the application that are functioning. Include any special instructions about how to login and/or use your application.
+
+The biggest frustration for me was with composer. I followed the instructions and it said that it
+succesfully installed. however when I tried to verify it using composer -V I got "command not found"
+however I just moved forward and everything else worked fine.
+
+4. Briefly describe any pieces of the assignment that are not yet working correctly.
+
+possibly composer
+
+5. Briefly describe the "coolest" thing you learned while completing this assignment.
+
+I honestly didn't really learn anything in this assignent. It was really just a set up assignment.
+
+6. Please select the category you feel best describes your assignment: [A-E]
+A - Some attempt was made
+B - Developing, but significantly deficient
+C - Slightly deficient, but still mostly adequate
+D - Meets requirements
+E - Shows creativity and excels above and beyond requirements
+
+E
+
+7. Provide a brief justification (1-2 sentences) for selecting that category.
+
+I added some style to my hello world page!
+
+

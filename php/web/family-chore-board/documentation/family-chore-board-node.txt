@@ -1,0 +1,44 @@
+Family Chore Board Node
+
+Project Description:
+In this project I will convert my existing family choreboard webapp into node and MamboDB. I will also add a couple features.
+
+Design Overview:
+My web app will track all of the chores, who they are assigned to, what tasks make up the chores, when the chores were completed, and how much Choredough each person has. There will be a user for each member of the family still living at home. Mom and Dad will be admin users meaning they will be able change things as if they were any of the children, and they will be able to manually adjust things related to Choredough. They will also be able to assign chores to specific children. Each child will be a normal user meaning they will only be able to report on the chores that they completed, and will only have read access to the Choredough. The system will automatically award Choredough based on completion of chores, and streaks.
+
+Database:
+My database will have several entities, "Users", "Chores", "tasks", and "transactions".
+Users: self explanatory.
+Chores: A collection of tasks worth a predefined amount of Choredough.
+Tasks: A thing that needs to be done.
+Transactions: Things that effect Choredough including completing a Chore, maintaining a streak, and spending Choredough.
+
+| ______________________ | __________________ | __________________ |
+| Users                  | Chores             | Tasks              |
+| ---------------------- | ------------------ | ------------------ |
+| id : SERIAL            | id : SERIAL        | id : SERIAL        |
+| Name : varchar(80)     | choredough : int   | description : text |
+| Password : varchar(80) | name : varchar(80) |                    |
+| isAdmin : bool         |                    | __________________ |
+| accountBalance : int   | __________________ | task_to_chore      |
+| streak : int           | chores_to_users    | ------------------ |
+|                        | ------------------ | id : SERIAL        |
+| ______________________ | id : SERIAL        | task_id : int      |
+| Transactions           | chore_id : int     | chore_id : int     |
+| ---------------------- | user_id : int      | task_time_estimate |
+| id : SERIAL            | date : timestamp   | task_completed     |
+| amount : real          | chore_completed    |                    |
+| new_balance : real     |
+| type : transactionType |
+| description : text     |
+| date : timestamp       |
+| user_id : int          |
+| chore_id : int         |
+
+The following features will be added the to current webapp after converting it to nodeJS:
+1) introduce a relationship between chores and date so that I can keep a history of all the chores that have been completed.
+2) Add the ability to navigate back in time to display and adjust chores on previous days.
+3) Get the streak functionality working correctly
+4) Add the ability to create new / edit chores
+5) Add the ability to create new / edit tasks
+6) Add the ability to create custom transactions

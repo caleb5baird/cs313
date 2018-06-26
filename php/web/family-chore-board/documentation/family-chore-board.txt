@@ -1,0 +1,66 @@
+Family Chore Board
+
+Project Description:
+In this project I will make a web application which can be the family chore board. In my family we have always had chores. However the way we assigned, reported, and done chores has experienced a lot of change. When I was a kid we had a "Chore Board" which had two slots for each child, a "todo" slot and a "done" slot. We each had a slip of paper for each chore which we would move from the "todo" slot into the "done" slot as we finished each chore. Years later my family no longer has that board, and we do our chores differently (and much more complexly). However that old chore board gave me the idea to make a web app to be used for the current chore situation.
+
+The way the chores work currently is as follows. Each child is assigned a list of chores. each chore has a list of tasks that make up the chore, and each chore is worth a certain amount of "Choredough".  Additional Choredough can be earned by doing extra chores, and also by maintaining streaks of days in which you completed all of your chores. Choredough corresponds to real money which you can use only to by tools.
+
+Design Overview:
+So my web app will track all of the chores, who they are assigned to, what tasks make up the chores, when the chores were completed, and how much Choredough each person has. There will be a user for each member of the family still living at home. Mom and Dad will be admin users meaning they will be able change things as if they were any of the children, and they will be able to manually adjust things related to Choredough. They will also be able to assign chores to specific children. Each child will be a normal user meaning they will only be able to report on the chores that they completed, and will only have read access to the Choredough. The system will automatically award Choredough based on completion of chores, and streaks.
+
+Database:
+My database will have several entities, "Users", "Chores", "tasks", and "transactions".
+Users: self explanetory.
+Chores: A collection of tasks worth a predefined amount of Choredough.
+Tasks: A thing that needs to be done.
+Transactions: Things that effect Choredough including completing a Chore, maintaining a streak, and spending Choredough.
+
+| Users                     | Chores                    |
+| ------------------------- | ------------------------- |
+| id : SERIAL               | id : SERIAL               |
+| Name : varchar(80)        | choredough : int          |
+| Password : varchar(80)    | choreDescription : text   |
+| isAdmin : bool            | date : timeStamp          |
+| accountBalance : int      | completed : bool          |
+|                           | userID : int              |
+|                           |                           |
+
+| Tasks                     | Transactions              |
+| ------------------------- | ------------------------- |
+| taskID : SERIAL           | id : SERIAL               |
+| taskDescription : text    | amount : int              |
+| timeEstimate : time       | description : text        |
+| completed : bool          | date : timestamp          |
+| choreID : int             | userID : int              |
+|                           |                           |
+
+Database Retrieval:
+Done: The web app will open to a login page.
+Done: When a child user logs in they will be displayed with a dashboard which displays their assigned chores, each chore will link to a delimitation of that chore broken down into individual tasks. In an additional checklist there will be displayed the list of unassigned chores which have not been completed by another child. Also on their dashboard will be displayed their current Choredough balance. This will be a link to their transaction history which will show when and when and why they received Choredough as when and how that Choredough has been spent.
+
+Done: When an admin user logs in they will be displayed with a dashboard which displays each child, each child will link to the child's dashboard. Also displayed on their dashboard will be a table with a column for each child plus an unassigned column. Chores will be displayed in the column which it is assigned to. Similar to on the child's dashboard, each Chore will link to a description of the chore with delimited tasks, and Choredough value.
+
+Database Update:
+Done: Data will be able to be adjusted by both child users and admin users. A child can from his/her dashboard report on which chores they have finished via their two checklists. The only other write access the child will have, is that they can click on a chore to see a breakdown of the tasks that makeup that chore. They can mark individual tasks as completed as they go if they wish. When they are all completed the chore will be marked as complete.
+
+An admin user will have far more write access to the database.
+Done: An admin will be able to adjust the status of any of the child's chores.  Therefore they can uncheck a chore if they do not agree that it was done satisfactorily.
+They will also have the ability to change the status of chores done in the past, an action not available to a child user.
+Done: Additionally, an admin will be able to add new users.
+and new chores.
+As well as change the tasks, and choredough value and description of existing chores.
+They will also be able to create new tasks, or change the time estimate and/or description of existing tasks.
+Admin will also have the ability to create or adjust transactions. If a chore was done exceptionally the admin may decide to increase the amount of the transaction created when the chore was marked as done.
+An admin could also create a transaction with a negative amount when a child uses choredough to purchase a tool.
+Finally admins will also have the ability to create transactions that are not tied to a specific chore if they want to provide an incentive for something else.
+
+These adjustments will be made as follows.
+Done: Adjust Chore Status: This could be done by navigating to the child's dashboard and checking or unchecking the chore. Alternatively, the admin could simply click on a chore in the assign table on his/her dashboard and change the status to done.
+Adjust Past Chore Status: In the top right corner of the admin dashboard the current date will be displayed, however if they click on the date they will be given a mini calendar pop up which will allow them to navigate to any date they would like. They can then edit that days information.
+Done*: Add New User: Above the table that displays all of the child users the admin will see a plus icon, by clicking this icon the admin will see a form in which they can add the information to create a new user.
+Add new chores: Next to the Chores displayed on the admin dashboard will be displayed a plus icon by which an admin can create a new chore.
+Adjust Chores: when an admin views a chore the choredough amount and description will be in an editable text field. They will aslo be able to adjust which tasks are assigned to the chore.An "Update Chore" button will update the database.
+Add Tasks: When editing a chore an admin will have a buttion which will allow them to Add a new task to the list.
+Adjust Tasks: When view a task, an admin will see the task description and time estimates in editable text fields. An "Update Task" button will update the database.
+Adjust Transactions: When an admin views a child's transaction history, they will be able to select a transaction to adjust the amount, or the user ID (if the chore was done by someone that it was not assigned to) and/or the description. The system will auto populate the description for chores that are completed, but an admin could increase the transaction amount and add a note to the discription explaining why.
+Add Transactions: When an admin views a child's transaction history they will see a botton near the bottom with reads "Add Transaction" using this button the admin could add a transaction that is not atached to a chore.

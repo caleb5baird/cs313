@@ -1,0 +1,35 @@
+After completing the assignment, please answer the questions in this text file and submit it to I-Learn.
+
+1. Copy and paste the URL for your web application:
+	https://safe-lake-68036.herokuapp.com/
+
+2. Copy and paste the URL for your source code repository (e.g., GitHub):
+	https://github.com/caleb5baird/cs313/tree/master/web/03Prove-shopping-cart
+
+3. Briefly list and describe the elements of the application that are functioning. Include any special instructions about how to login and/or use your application.
+	When you load this web page you will see a list of services that you can purchase. Each item
+	has an add to cart button next to it so that it is simple to add items to the cart.
+	To go to the cart simply click on the icon in the top right corner of the screen. There you
+	will see a list of the items in your cart. You can remove any item you would like by clicking
+	the remove button to the left. You can also enter your shipping information from that page.
+	There is some nice client side validation the requires the fields to be filled out and formats
+	the phone field automatically. You can than checkout which brings you to a confirmation page
+	where your confirm that the information is correct before actually checking out. If you click
+	checkout from there the cart will be emptied and you will be redirected to the home page.
+
+4. Briefly describe any pieces of the assignment that are not yet working correctly.
+	It is all working correctly.
+
+5. Briefly describe the "coolest" thing you learned while completing this assignment.
+	I honestly didn't really learn anything new from this assignment.
+
+6. What is the difference between an HTTP Get and Post? When should each be used?
+	An HTTP Get is a request for information from a server. A POST is sending information to the
+	server to be processed. In this assignment.
+
+7. Please select the category you feel best describes your assignment:
+	D - Meets requirements
+
+8. Provide a brief justification (1-2 sentences) for selecting that category.
+	I think it looks pretty good but I didn't really go above and beyond on the assignment.
+

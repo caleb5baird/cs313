@@ -1,0 +1,25 @@
+In each of the following categories I will give a score from 1 - 10.
+	Professional look and feel:
+		8: I would give it an eight because I think it looks pretty good and the user interaction is pretty smooth. However, this was not my main emphasis in this project and so I didn't spend the time to really get it looking and feeling really good.
+
+	Accomplishes a meaningful/interesting task
+		9: I made this web app for my family and I hope that it will be something that they use regularly to track the family chores. I mark it as a 9 not a 10 because I still have not made a way for the chores to be marked as not done each night in preparation for the next day.
+
+	Demonstrates good database design principles
+		10: PSQL was a brand new subject for me in this class is one of the main reasons that I took this class. I believe that I have been able to design a good database for my project and have modified it along the way as I have learned new things.
+
+	Demonstrates skill in database retrieval
+		10: This was another of my emphasizes in this project and I think that I was able to retrieve data from the database in a safe and elegant way. In particular I like the way that I was able to retrieve the data for displaying the chores. A couple of the things that I found helpful was to make a chunk that would display the chores using a query variable that it did not create, in this way I was able to create a several different queries and then include the same chunk in different places so that it would pull the chores in different categories but display them in a uniform way. This helped to make a more seamless feel and also prevented a lot of duplicate code so that when a change is needed it only has to be made in the one place. I also believe that I used proper methods of retrieval including prepared statements, and bound variables.
+
+	Demonstrates skill in database modification
+		10: As I created this app I was always thinking about how database modification should be done. I believe that I managed to make use of good techniques in updating the database. I used various triggers in the database to ensure that different tables and columns always remained in sync.  For example when a chore is marked as done in the database, a trigger is activated which will create a transaction for that chore, and update the users' account balance.
+
+	Demonstrates mastery of client-side/server-side coordination and communication
+		10: This was another area of focus for me in this project. I spent a lot of time trying to determine which tasks should be done in the different areas. I believe that I was successful in this effort. As an example you can look at what happens when a chore is marked as done.  Javascript is run on the client side to move the chore to the "Done" category, and to mark it as done. The Javascript also launches an ajax request to the server to update the database.  This allows the user to interface with the chores, moving them from one category to another without having to reload the page after every change. However there is server side activity happening in the background to ensure that when the do reload the page, things have been updated in the database so that things remain the same.
+
+The scale for evaluation is:
+	C) Slightly deficient, but still mostly adequate
+		I make a note here becuase I have not made a way for the chores to be marked as not done each night in preperation for the next day. I think that the way I should do this is with a cron job in the database, however I have not been able to figure out how to accomplish it yet. I still plan to do it because I want this to be a working and useful tool for my family.
+
+	E) Shows creativity and excels above and beyond requirements
+		I believe that although I have not created the cron job to mark chores as not done each night that this project still exudes the requirements of this assignment in the way that it applies the principles that we have been learning in this class. It also shows creativity in many areas including the use of database functions and triggers. The modular design and implementation of database retrieval and modification via PHP.

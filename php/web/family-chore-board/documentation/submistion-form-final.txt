@@ -1,0 +1,85 @@
+After completing the assignment, please answer the questions in this text file and submit it to I-Learn.
+
+1. Project Title / One sentence description:
+	Family Choreboard / A web application to track the family chores and allow parents and children
+	modification ability.
+
+2. The Heroku URL for your web application:
+	https://safe-lake-68036.herokuapp.com/family-chore-board/
+
+3. The GitHub URL for your source code repository:
+	https://github.com/caleb5baird/cs313/tree/master/web/family-chore-board
+
+4. Please provide a brief description of what your project does and how to use the application. Make sure to include any required information like a username and password.
+	This web application is a software realization of an idea that began in our family with an old
+	physical choreboard that we had which had two slots for each child, we then had a card for each
+	chore that was assigned to us and we could move the card from the todo slot into the done slot
+	after finishing each chore. This software version of the choreboard allows the same
+	catigorization but also implements a transaction tracking and creating interface which allows
+	insentive for each chore. The following users are used,
+	| Name    | Password | Admin |
+	| ------- | -------- | ----- |
+	| Ammon   | password | no    |
+	| Joshua  | password | no    |
+	| Mattie  | password | no    |
+	| Russell | password | yes   |
+	| Margie  | password | yes   |
+
+5. Briefly describe any pieces of the assignment that are not yet working correctly.
+	The thing that still is not working in my application is nightly action of marking chores as not
+	done so that they can be done each day.
+
+6. Provide evidence of your database design by including the SQL file with the commands used to create your tables, etc. (This is ideally the exact file you used to create them. But if you don't have that, you could dump the SQL that describes your database from Heroku to a file "output.sql" using the following command: heroku run 'pg_dump $DATABASE_URL' > output.sql
+
+	Submit this SQL file in addition to the submission file for this assignment.
+	-------------------------------------
+		Project Self-assessment
+	-------------------------------------
+		Requirements
+		------------
+		(YES) 1. Your web application is running in Heroku.
+		(YES) 2. Your latest source code is in GitHub.
+		(YES) 3. Your web application uses data stored in the session.
+		(YES) 4. Your web application uses a PostgreSQL database in Heroku.
+		(YES) 5. Your database schema includes foreign key references.
+		(YES) 6. Your web application includes an SQL SELECT query that joins multiple tables.
+		(YES) 7. Your web application includes an SQL UPDATE statement.
+
+For each of the following criteria, please replace the "(A-E)" with either the "A", "B", "C", "D", or "E" category you feel best describes your work. Include a 1-2 sentence justification.
+
+Categories
+----------
+A - Some attempt was made.
+B - Developing, but significantly deficient.
+C - Slightly deficient, but still mostly adequate.
+D - Meets requirements.
+E - Shows creativity and excels above and beyond requirements.
+
+Criteria
+----------
+(D) 1. Professional look and feel.
+	I would give it an eight because I think it looks pretty good and the user interaction is pretty smooth. However, this was not my main emphasis in this project and so I didn't spend the time to really get it looking and feeling really good.
+
+(C) 2. Accomplishes a meaningful/interesting task.
+	I made this web app for my family and I hope that it will be something that they use regularly to track the family chores. I mark it as a 9 not a 10 because I still have not made a way for the chores to be marked as not done each night in preparation for the next day.
+
+(D) 3. Demonstrates skill with HTML, CSS, and JavaScript.
+	Styling was not my main focus but I did try to make it look nice and to use good technigue.
+
+(E) 4. Demonstrates skill with PHP.
+	This was one of my emphasis in this project becuase before this class my ability with PHP was minimal. I believe that I was able to use PHP to make a very modular website in which code was not duplicated becuase I used included chunks where possible
+
+(E) 5. Demonstrates good database design principles.
+	PSQL was a brand new subject for me in this class is one of the main reasons that I took this class. I believe that I have been able to design a good database for my project and have modified it along the way as I have learned new things.
+
+(E) 6. Demonstrates skill in database retrieval.
+	This was another of my emphasizes in this project and I think that I was able to retrieve data from the database in a safe and elegant way. In particular I like the way that I was able to retrieve the data for displaying the chores. A couple of the things that I found helpful was to make a chunk that would display the chores using a query variable that it did not create, in this way I was able to create a several different queries and then include the same chunk in different places so that it would pull the chores in different categories but display them in a uniform way. This helped to make a more seamless feel and also prevented a lot of duplicate code so that when a change is needed it only has to be made in the one place. I also believe that I used proper methods of retrieval including prepared statements, and bound variables.
+
+(E) 7. Demonstrates skill in database modification.
+	As I created this app I was always thinking about how database modification should be done. I believe that I managed to make use of good techniques in updating the database. I used various triggers in the database to ensure that different tables and columns always remained in sync.  For example when a chore is marked as done in the database, a trigger is activated which will create a transaction for that chore, and update the users' account balance.
+
+(E) 8. Demonstrates mastery of client-side/server-side coordination and communication.
+	This was another area of focus for me in this project. I spent a lot of time trying to determine which tasks should be done in the different areas. I believe that I was successful in this effort. As an example you can look at what happens when a chore is marked as done.  Javascript is run on the client side to move the chore to the "Done" category, and to mark it as done. The Javascript also launches an ajax request to the server to update the database.  This allows the user to interface with the chores, moving them from one category to another without having to reload the page after every change. However there is server side activity happening in the background to ensure that when the do reload the page, things have been updated in the database so that things remain the same.
+
+(E) 9. Overall project evaluation.
+	I believe that although I have not created the cron job to mark chores as not done each night that this project still exudes the requirements of this assignment in the way that it applies the principles that we have been learning in this class. It also shows creativity in many areas including the use of database functions and triggers. The modular design and implementation of database retrieval and modification via PHP.

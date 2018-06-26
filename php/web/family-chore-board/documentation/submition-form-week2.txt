@@ -1,0 +1,69 @@
+After completing the assignment, please answer the questions in this text file and submit it to I-Learn.
+
+1. Copy and paste the URL for your web application:
+	https://safe-lake-68036.herokuapp.com/family-chore-board/
+
+2. Copy and paste the URL for your source code repository (e.g., GitHub):
+	https://github.com/caleb5baird/cs313/tree/master/web/family-chore-board
+
+3. Briefly list and describe the elements of the application that are functioning. Include any special instructions about how to login and/or use your application.
+	As of now the application is almost functional for tracking the chores. When a user logs in they
+	see their choreboard and can simply click done on any of the chores in order to move them to the
+	done section. When they do this the database is updated including the creation of a transaction
+	for that chore and updating the account balance accordingly. Chores are moved from one category
+	to another on the client side so that the page does not need to refresh each time they mark a
+	chore. However the database is being adjusted in the background so when they do refresh the page
+	the chores will stay in their respective categories and the missing information (account balance
+	and current streak) will be updated.
+
+	The account history page is styled and working to display all of the transactions. You can get to
+	this page by clicking on the Account Balance (I will make that link more noticeable next week.)
+
+	When an admin logs in he/she will see each of the user dashboards and will be able to interact
+	with the dashboards for the user. They can also look at the users account history pages.
+
+4. Briefly describe any pieces of the assignment that are not yet working correctly.
+	The main thing that is missing is that I have not created the nightly task that will mark all
+	chores as not completed, and end any streaks for users that did not do all of their chores that
+	day.
+
+	Other than that there are a couple other things that I want to add, both stylistically and
+	functionally. I want to add the ability to create new chores and tasks from the client end, as
+	well as create new transactions. I need to discuss with my sponsor about how much of this can be
+	done by a normal user, and how much is restricted to an admin.
+
+	Another issue that I would like to fix is as follows. When you are logged in as an admin you see
+	each users dashboard. The third category of chores in each of these dashboards is of the chores
+	that are not assigned. If you assign one of these chores to one of the users it removes it from
+	that section on that user's choreboard however it is still in the unassigned section on the other
+	choreboards. So the page has to be refreshed before the other choreboards update. This could
+	cause problems because a chore could end up being assigned to more than one person....
+
+5. Briefly describe the "coolest" thing you learned while completing this assignment.
+	I would say that there were two really cool things that I got from this weeks assignment.
+	1) PHP. I have made my web app very granular by breaking it up into lots of php files. I can then
+	include these files where they are needed and prevent code duplication. In this way my php files
+	behave a lot like functions. One of the best examples of this is the admin dashboard. It simply
+	queries the database for all of the non admin users and then pulls in the choreboard for each of
+	these users.
+
+	2) PSQL. Again writing functions and triggers in psql is very exiting and cool to me. All I have
+	to do in the php is make a simple modification to my chores_to_users table (either an insertion
+	to assign a chore to a user, or an update to change the status of the chore) and functions are
+	triggered to take care of all the other database updates. Transactions are created, the account
+	balance is updated, and the user's streak can also be updated. All of this is done from within
+	the database, so if I had an app and a website both drawing from this database the functionality
+	and code would not have to be replicated for the different terminals.
+
+6. What is a benefit of having a foreign key constraint?
+	With a foreign key constraint I know that my donations are good. It will only let me add an id
+	that really does link to another entity.
+
+7. Please select the category you feel best describes your assignment:
+E - Shows creativity and excels above and beyond requirements
+
+8. Provide a brief justification (1-2 sentences) for selecting that category.
+	I have done everything in my project, except the login page from scratch and it does a good job
+	of separating things into the client side and the servers side, and also into the php side and
+	the database side.
+
