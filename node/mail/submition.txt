@@ -1,0 +1,29 @@
+After completing the assignment, please answer the questions in this text file and submit it to I-Learn.
+
+1. Copy and paste the URL for your web application:
+  https://pacific-anchorage-41153.herokuapp.com
+
+2. Copy and paste the URL for your source code repository (e.g., GitHub):
+  https://github.com/caleb5baird/cs313/tree/master/node/mail/node-js-getting-started
+
+3. Briefly list and describe the elements of the application that are functioning. Include any special instructions about how to login and/or use your application.
+  It is fully functional albeit a little ugly. When the application is opened you are displayed with
+  a selection field to select the type of mail. and a number field to enter the weight (in oz).
+  After you enter those values you can submit the form to calculate the rate. If the weight that you
+  entered is invalid it will notify you.
+
+4. Briefly describe any pieces of the assignment that are not yet working correctly.
+  It is working correctly.
+
+5. Briefly describe the "coolest" thing you learned while completing this assignment.
+  I learned that in .ejs you can open an if statement in <% %> tags and then end the tag and put some plain html and then close the if statement in another set of <% %> tags!
+
+6. In your own words, briefly describe the concept of a callback function and why it is useful.
+  The idea of a callback function is that I have given a task to a function but do not want to wait around to tell it what to do when it finishes so rather I give it a function, so it knows to do whatever is in that function when it finishes.
+
+7. Please select the category you feel best describes your assignment:
+D - Meets requirements
+
+8. Provide a brief justification (1-2 sentences) for selecting that category.
+  I just went through the requirements and filled them, I did not look for necessarily the "best" solution, nor did I add any extra styling or functionality.
+
