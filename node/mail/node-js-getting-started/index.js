@@ -10,8 +10,8 @@ app.get('/', (req, res) => res.render('pages/index'))
 app.get('/calculate-mail', calculateRate)
 
 function calculateRate(req, res) {
-	var weight = req.query["weight"];
-	var mailType = req.query["mailType"];
+	var weight = req.query.weight;
+	var mailType = req.query.mailType;
 	console.log(weight);
 	console.log(mailType);
 	switch (mailType) {
@@ -32,7 +32,7 @@ function calculateRate(req, res) {
 	}
 
 	res.locals.rate = rate;
-	res.render('pages/postal-rate');
+	res.render('postal-rate');
 }
 
 /**********************************************************************\
