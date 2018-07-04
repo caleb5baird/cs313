@@ -1,0 +1,2 @@
+
+docker run -it --rm --name choreboard-node -v `pwd`:/usr/src/app -w /usr/src/app --link choreboard-pg -p 5000:5000 node:alpine node index.js
