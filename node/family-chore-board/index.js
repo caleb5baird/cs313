@@ -18,19 +18,19 @@ app.use(express.static(path.join(__dirname, 'public')))
 	.use(express.urlencoded( {extended:true} ));
 
 // routing rules
-app.get('/', (req, res) => res.sendFile(path.join(__dirname+'/public/index.html')))
-	.get("/chores/:category/:userId", getChores)
-	.get("/tasks/:choreId", getTasks)
-	.get("/account-history/:userId", getAccountHistory);
+app.get("/user/:userId", getUser)
+	.get("/user/:userId/chores/:category", getChores)
+	.get("/chore/:choreId/tasks/", getTasks)
+	.get("/user/:userId/account-history", getAccountHistory);
 
-app.post("/user/:id", addUser)
+app.post("/users", addUser)
 	.post("/login", login)
-	.post("/chore/:id", addChore)
-	.post("/task/:id", addTask);
+	.post("/chores", addChore)
+	.post("/chore/:choreId/tasks", addTask);
 
-app.put("/user/:id", updateUser)
-	.put("/chore/:id", updateChore)
-	.put("/task/:id", updateTask);
+app.put("/users/:userId", updateUser)
+	.put("/chore/:choreId", updateChore)
+	.put("/chore/:choreId/task/:taskId", updateTask);
 
 // app.delete("/" logout);
 
@@ -59,6 +59,21 @@ function logout(req, res) {
 	res.sendFile(path.join(__dirname+'/public/index.html'))
 }
 
+function getUser(req, res) {
+	var userId = req.params.userId;
+	console.log("userId = " + userId)
+	getUserFromDb(userId, function(err, result) {
+		if(err || result == null) {
+			// the data is false
+			res.status(500).json({success: false, data: err});
+		} else {
+			var chores = result;
+			res.status(200).json(chores);
+			console.log(chores);
+		}
+	});
+}
+
 function getChores(req, res) {
 	var category = req.params.category;
 	var userId = req.params.userId;
@@ -67,7 +82,7 @@ function getChores(req, res) {
 	getChoreFromDb(userId, category, function(err, result) {
 		if(err || result == null) {
 			// the data is false
-			res.status(500).json({success: false, data: error});
+			res.status(500).json({success: false, data: err});
 		} else {
 			var chores = result;
 			res.status(200).json(chores);
@@ -82,7 +97,7 @@ function getTasks(req, res) {
 	getTasksFromDb(choreId, function(err, result) {
 		if(err || result == null) {
 			// the data is false
-			res.status(500).json({success: false, data: error});
+			res.status(500).json({success: false, data: err});
 		} else {
 			var tasks = result;
 			res.status(200).json(tasks);
@@ -98,7 +113,7 @@ function getAccountHistory(req, res) {
 		//TODO the .length check might be false
 		if(err || result == null) {
 			// the data is false
-			res.status(500).json({success: false, data: error});
+			res.status(500).json({success: false, data: err});
 		} else {
 			var accountHistory = result;
 			res.status(200).json(accountHistory);
@@ -107,6 +122,22 @@ function getAccountHistory(req, res) {
 }
 
 function addUser(req, res) {
+	var username = req.query.username;
+	var password = req.query.password;
+	var isAdmin  = req.query.isAdmin;
+	console.log("Username = " + username);
+	console.log("Password = " + password);
+	console.log("isAdmin = " + isAdmin);
+	addUserToDb(username, password, isAdmin, function(err, result) {
+		//TODO the .length check might be false
+		if(err || result == null) {
+			// the data is false
+			res.status(500).json({success: false, data: err});
+		} else {
+			var user = result;
+			res.status(200).json(user);
+		}
+	});
 }
 
 function addChore(req, res) {
@@ -124,12 +155,32 @@ function updateChore(req, res) {
 function updateTask(req, res) {
 }
 
+function getUserFromDb(userId, callback) {
+	console.log("Getting User from DB...");
+	console.log("userId = " + userId)
+	// set up the sql
+	var query = "SELECT id, name, is_admin AS isAdmin, account_balance AS accountBalance, streak "
+	+ " FROM users WHERE id=$1::int";
+	console.log("query = " + query);
+	var params = [userId];
+	// make the database request
+	pool.query(query, params, function(err, result) {
+		if(err) {
+			console.log("Error in query: ")
+			console.log(err)
+			callback(err, null);
+		}
+		// console.log("Found res: " + JSON.stringify(result.rows));
+		callback(null, result.rows);
+	});
+}
+
 function getChoreFromDb(userId, category, callback) {
 	console.log("Getting chores from DB...");
 	console.log("category = " + category)
 	console.log("userId = " + userId)
 	// set up the sql
-	var select = "SELECT c.name AS name, c.id, u.id As userId FROM users u "
+	var select = "SELECT c.name AS name, c.id AS userId, u.id As userId FROM users u "
 		+ "INNER JOIN chore_assignments ca ON u.id=ca.user_id "
 		+ "INNER JOIN chores c ON ca.chore_id=c.id";
 	var query;
@@ -145,7 +196,7 @@ function getChoreFromDb(userId, category, callback) {
 			params = [userId];
 			break;
 		case 'unassigned':
-			query = "SELECT name, id FROM chores WHERE id NOT IN "
+			query = "SELECT id, name, choredough id FROM chores WHERE id NOT IN "
 				+ "(SELECT chore_id FROM chore_assignments)";
 			break;
 		default:
@@ -168,7 +219,7 @@ function getTasksFromDb(choreId, callback) {
 	console.log("Getting tasks from DB...");
 	console.log("choreId = " + choreId)
 	// set up the sql
-	var query = "SELECT t.description AS task, t.id AS taskId, ttc.task_completed AS completed "
+	var query = "SELECT t.description, t.id AS taskId, ttc.task_completed AS completed "
 		+ "FROM tasks t "
 		+ "INNER JOIN task_to_chore ttc ON t.id = ttc.task_id "
 		+ "INNER JOIN chores c ON ttc.chore_id = c.id "
@@ -193,11 +244,36 @@ function getTransactionsFromDb(userId, callback) {
 	console.log("Getting transactions from DB...");
 	console.log("userId = " + userId)
 	// set up the sql
-	var query = "SELECT date, type, description, amount, new_balance "
+	var query = "SELECT date, type, description, amount, newBalance "
 		+ "FROM transactions WHERE user_id=$1::int ORDER BY date DESC, id DESC";
 	console.log("query = " + query);
 	// populate the parameteres we wil use to fill the placehoders in the query
 	var params = [userId];
+
+	// make the database request
+	pool.query(query, params, function(err, result) {
+		if(err) {
+			console.log("Error in query: ")
+			console.log(err)
+			callback(err, null);
+		}
+		// console.log("Found res: " + JSON.stringify(result.rows));
+		callback(null, result.rows);
+	});
+
+}
+
+function addUserToDb(username, password, isAdmin, callback) {
+	console.log("Adding User to DB...");
+	console.log("Username = " + username);
+	console.log("Password = " + password);
+	console.log("isAdmin = " + is_admin);
+	// set up the sql
+	var query = "INSERT INTO users (name, password, is_admin) "
+		+ " VALUES ($1::varchar(80), $2::varchar(80), $3::bool)";
+	console.log("query = " + query);
+	// populate the parameteres we wil use to fill the placehoders in the query
+	var params = [username, password, isAdmin];
 
 	// make the database request
 	pool.query(query, params, function(err, result) {

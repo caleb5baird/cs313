@@ -1,0 +1,33 @@
+After completing the assignment, please answer the questions in this text file and submit it to I-Learn.
+
+1. Project Title / One sentence description:
+  Family Choreboard/ A web application to track the family chores.
+
+2. Copy and paste the URL for your web application (if applicable):
+
+
+3. Copy and paste the URL for your source code repository (e.g., GitHub):
+
+
+4. Describe the functionality that is currently working, along with any special instructions of how to use your web application:
+  I am making my web app to use react to render the content on the client side. I set it up to
+  display using hard coded json objects and that works ok.
+
+5. Describe the features that are not yet working correctly.
+  The things that are not currently working are the following.
+  Images are not being rendered.
+  I wrote an ajax request to pull the chores. however it caused an infinite loop for some reason and
+  I have not been able to figure it out. When I do figure out what is causing the infinite loop I
+  will eaisily be able to make the other ajax requests and render the rest of the web app
+  dynamically.
+
+6. Please select the category you feel best describes your assignment:
+C - Slightly deficient, but still mostly adequate
+
+7. Provide a brief justification (1-2 sentences) for selecting that category.
+  Becuase it currently does not display with the imgages it does not look very good.
+  additionally there is an infinite loop cuasing it to display an endless list of chores. all with
+  the same tasks and null information about the chore itself.
+
+8. Please list any questions you have for the instructor regarding this assignment or this week's topic.
+  None

@@ -9,6 +9,7 @@ DROP TABLE tasks;
 DROP TABLE chores;
 DROP TABLE users;
 DROP TYPE transactionType;
+
 CREATE TYPE transactionType AS ENUM ('dough', 'bonus', 'purchase', 'jurnaled');
 
 CREATE TABLE users

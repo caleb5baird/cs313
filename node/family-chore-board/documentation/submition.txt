@@ -10,9 +10,20 @@ After completing the assignment, please answer the questions in this text file a
 
 4. List the name of each of the Web service endpoints that are working:
 
+get('/'
+get("/chores/:category/:userId"
+get("/tasks/:choreId"
+get("/account-history/:userId"
 
 5. List any Web service endpoints that are not yet functioning:
+post("/user/:id"
+post("/login"
+post("/chore/:id"
+post("/task/:id"
 
+put("/user/:id"
+put("/chore/:id"
+put("/task/:id"
 
 6. Please select the category you feel best describes your assignment:
 A - Some attempt was made
