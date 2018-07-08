@@ -4,10 +4,10 @@ After completing the assignment, please answer the questions in this text file a
   Family Choreboard/ A web application to track the family chores.
 
 2. Copy and paste the URL for your web application (if applicable):
-
+  I have not been able to push it to heroku> I will talk to brother burton about it.
 
 3. Copy and paste the URL for your source code repository (e.g., GitHub):
-
+  https://github.com/caleb5baird/cs313/tree/master/node/family-chore-board
 
 4. Describe the functionality that is currently working, along with any special instructions of how to use your web application:
   I am making my web app to use react to render the content on the client side. I set it up to
