@@ -5,6 +5,7 @@
 body, html {
 	margin: 0;
 	padding: 10px;
+	background-color: #000000;
 }
 
 /* Bordered form */
@@ -75,10 +76,10 @@ input[type=text], input[type=password] {
 
 /* Add padding to containers */
 .choreboard {
-	/* padding: 16px; */
-	background: url("/images/wood.jpg") no-repeat;
+	padding: 16px;
+	background: url("./images/wood.jpg") no-repeat;
 	background-size: cover;
-	/* color: #ffffff; */
+	border-radius: 15px;
 }
 
 /* The "Forgot password" text */
@@ -101,7 +102,7 @@ span.psw {
 }
 
 .choreboardHeader {
-	margin-top: 40px;
+	margin-top: 10px;
 	display: flex;
 	padding: 0 20px;
 	justify-content: space-between;
@@ -111,12 +112,15 @@ span.psw {
 
 .name {
 	font-size: 30px;
-	font-weight: bold;
+	color: #ffffff;
+	font-weight: lighter;
 }
 
 .streak {
 	padding-right: 20px;
 	padding-bottom: 5px;
+	color: #ffffff;
+	font-weight: lighter;
 }
 
 .choreboardHeader a {
@@ -127,7 +131,7 @@ span.psw {
 }
 
 .choreboardBody {
-	padding: 20px;
+	padding: 10px 20px;
 	background: url("/images/wood.jpg") no-repeat;
 	background-size: cover;
 	border-radius: 20px;
@@ -156,7 +160,7 @@ h3 {
 .chores>li {
 	padding: 10px 20px;
 	list-style-type: none;
-	background-image: url("/images/paper.png");
+	background-image: url("./images/paper.png");
 	border-radius: 10px;
 	width: 200px;
 	margin: 15px;
@@ -195,7 +199,7 @@ a.done {
 .heading a, .balance {
 	font-size: 20px;
 	padding: 7px;
-	border: 2px solid #375eb5;
+	border: 2px solid #000000;
 	background-color: #f5f6f7;
 	border-radius: 5px;
 	margin-bottom: 5px;

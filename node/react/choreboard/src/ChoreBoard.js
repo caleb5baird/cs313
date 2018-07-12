@@ -27,7 +27,7 @@ class Tasks extends React.Component {
 		}
 
 		return (
-			<ul class='tasks'>
+			<ul className='tasks'>
 				{ allTasks }
 			</ul>
 		);
@@ -35,19 +35,20 @@ class Tasks extends React.Component {
 }
 
 class Chores extends React.Component {
-	state = { chores: [] }
-
 	constructor(props) {
 		super(props);
-		if (!this.state.chores.length) {
-			getChores(this.props.userId, this.props.category, (err, chores) => this.setState({ chores }))
-		}
+		this.state = { chores: [{'name':'Chore','id':0,'userid':1}] };
+	}
+
+	componentWillMount() {
+		getChores(this.props.userId, this.props.category,
+			(err, data) => this.setState({ chores: data }));
 	}
 
 	renderChore(chore) {
 		return(
 			<li>
-				<span> {chore.name}<a class='button done'>{'Done'}</a> </span>
+				<span> {chore.name}<a className='button done'>{'Done'}</a> </span>
 				<hr/>
 				<Tasks choreId = {chore.id} />
 			</li>
@@ -55,25 +56,26 @@ class Chores extends React.Component {
 	}
 
 	render() {
-		let allChores = [];
-
-		// console.log('AllChores: ', allChores)
-		// console.log('state: ', this.state.chores)
-
-		for (let chore of this.state.chores) allChores.push(this.renderChore(chore));
-
-		return (
-			<ul class='chores'>
-				{ allChores }
-			</ul>
-		);
+		if (this.state.chores === 0){
+			return false;
+		} else {
+			let allChores = [];
+			// console.log('AllChores: ', allChores)
+			// console.log('state: ', this.state.chores)
+			for (let chore of this.state.chores) allChores.push(this.renderChore(chore));
+			return (
+				<ul className='chores'>
+					{ allChores }
+				</ul>
+			);
+		}
 	}
 }
 
 class ChoreBoardBody extends React.Component {
 	renderChoreCategory(category) {
 		return(
-			<div class='choreCategory'>
+			<div className='choreCategory'>
 				<h3>{category.name}</h3>
 				<Chores userId = {this.props.userId} category = {category.id} />
 			</div>
@@ -82,7 +84,7 @@ class ChoreBoardBody extends React.Component {
 
 	render() {
 		return(
-			<div class='choreboardBody'>
+			<div className='choreboardBody'>
 				{this.renderChoreCategory({ name: 'To Do:', id: 'to-do' })}
 				{this.renderChoreCategory({ name: 'Done:', id: 'done' })}
 				{this.renderChoreCategory({ name: 'Additional Chores:', id: 'unassigned' })}
@@ -94,14 +96,14 @@ class ChoreBoardBody extends React.Component {
 class ChoreBoardHeader extends React.Component {
 	render() {
 		return (
-			<div class='choreboardHeader'>
-				<button class='balance' onClick={ () => this.props.onClick() /* TODO finish this */} >
+			<div className='choreboardHeader'>
+				<button className='balance' onClick={ () => this.props.onClick() /* TODO finish this */} >
 					{'Account Balance = $' + this.props.user.accountBalance}
 				</button>
-				<span class='streak'>{'Streak = ' + this.props.user.streak}</span>
+				<span className='streak'>{'Streak = ' + this.props.user.streak}</span>
 				<div>
-					<div class='name'>{this.props.user.name}</div>
-					<div class='dropdown-content'>
+					<div className='name'>{this.props.user.name}</div>
+					<div className='dropdown-content'>
 						<button onClick={''/* logout()TODO Finish this*/ } >{'Log Out'}</button>
 					</div>
 				</div>
@@ -115,10 +117,9 @@ class ChoreBoard extends React.Component {
 		super(props);
 		this.user = getUser();
 	}
-
 	render() {
 		return (
-			<div class="choreboard">
+			<div className="choreboard">
 				<ChoreBoardHeader user = {this.user} />
 				<ChoreBoardBody userId = {this.user.id} />
 			</div>
