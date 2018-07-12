@@ -3,9 +3,9 @@ const PORT = process.env.PORT || 5000
 const path = require('path')
 const session = require('express-session');
 const { Pool } = require("pg");
-const pool = new Pool({connectionString: connectionString});
 const connectionString = process.env.DATABASE_URL
 	|| 'postgres://postgres:password@choreboard-pg:5432/postgres';
+const pool = new Pool({connectionString: connectionString});
 
 // custom modules
 const dbAccess = require('./db-access.js');

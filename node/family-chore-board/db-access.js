@@ -58,22 +58,22 @@ function getChoreFromDb(userId, category, callback) {
 	});
 }
 
-function getChoreFromDb(chore, callback) {
-	let query = 'UPDATE chores c INNER JOIN chore_assignments ca ON c.id=ca.user_id '
-		+ 'SET (c.name=$2::varchar(100), c.choredough=$3::real, ca.user_id=$4::int,'
-		+ ' assigned=$5::date, unassigned=$6::date) '
-		+ 'WHERE c.id=$1::int';
-	let params = [choreId, name, choredough, userId, assignedDate, unassignedDate];
-	pool.query(query, params, function(err, result) {
-		if(err) {
-			console.log("Error in query: ")
-			console.log(err)
-			callback(err, null);
-		}
-		// console.log("Found res: " + JSON.stringify(result.rows));
-		callback(null, result.rows);
-	});
-}
+// function getChoreFromDb(chore, callback) {
+//    let query = 'UPDATE chores c INNER JOIN chore_assignments ca ON c.id=ca.user_id '
+//       + 'SET (c.name=$2::varchar(100), c.choredough=$3::real, ca.user_id=$4::int,'
+//       + ' assigned=$5::date, unassigned=$6::date) '
+//       + 'WHERE c.id=$1::int';
+//    let params = [choreId, name, choredough, userId, assignedDate, unassignedDate];
+//    pool.query(query, params, function(err, result) {
+//       if(err) {
+//          console.log("Error in query: ")
+//          console.log(err)
+//          callback(err, null);
+//       }
+//       // console.log("Found res: " + JSON.stringify(result.rows));
+//       callback(null, result.rows);
+//    });
+// }
 
 function getTasksFromDb(choreId, callback) {
 	console.log("Getting tasks from DB...");
@@ -148,9 +148,9 @@ function addUserToDb(username, password, isAdmin, callback) {
 }
 
 module.export = {
-	getUserFromDb: getUserFromDb
-	getChoreFromDb: getChoreFromDb
-	getTasksFromDb: getTasksFromDb
-	addUserToDb: addUserToDb
+	getUserFromDb: getUserFromDb,
+	getChoreFromDb: getChoreFromDb,
+	getTasksFromDb: getTasksFromDb,
+	addUserToDb: addUserToDb,
 	getTransactionsFromDb: getTransactionsFromDb
 }
