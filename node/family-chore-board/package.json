@@ -27,5 +27,18 @@
     "eslint": "^5.0.1",
     "nodemon": "^1.18.1",
     "npm-run-parallel": "^0.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heroku/node-js-getting-started"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "postgress",
+    "express"
+  ],
+  "engines": {
+    "node":"8.11.3"
   }
 }
