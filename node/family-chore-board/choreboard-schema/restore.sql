@@ -1,18 +1,26 @@
 DROP FUNCTION insert_transaction() CASCADE;
-DROP FUNCTION update_chore_assignments() CASCADE;
-DROP TABLE transactions;
-DROP TABLE chore_assignments;
-DROP TABLE temporarary_chore_assignments;
-DROP TABLE chore_done;
-DROP TABLE task_to_chore;
-DROP TABLE tasks;
-DROP TABLE chores;
-DROP TABLE users;
+DROP FUNCTION make_an_accomplishment() CASCADE;
+DROP FUNCTION delete_an_accomplishment() CASCADE;
+DROP VIEW chores_not_done_by_person;
+DROP VIEW chores_done_by_person;
+DROP VIEW current_task_per_chore_per_person;
+DROP VIEW tasks_done_per_person_per_chore_by_day;
+DROP VIEW current_chores_per_person;
+DROP TABLE transaction;
+DROP TABLE accomplishment;
+DROP TABLE assignment;
+DROP TABLE chore_task;
+DROP TABLE task;
+DROP TABLE chore;
+DROP TABLE person;
 DROP TYPE transactionType;
 
 CREATE TYPE transactionType AS ENUM ('dough', 'bonus', 'purchase', 'jurnaled');
 
-CREATE TABLE users
+/******************************************************************************\
+ * Person :: Users of the app
+\******************************************************************************/
+CREATE TABLE person
 (
 	id SERIAL PRIMARY KEY,
 	name varchar(80) NOT NULL UNIQUE,
@@ -22,159 +30,297 @@ CREATE TABLE users
 	streak int DEFAULT 0
 );
 
-CREATE TABLE chores
+/**********************************************************\
+ * Chore :: Chores to be assigned to people. A group of tasks
+\**********************************************************/
+CREATE TABLE chore
 (
 	id SERIAL PRIMARY KEY,
-	name varchar(100) NOT NULL UNIQUE,
-	choredough real NOT NULL
+	name varchar(100) NOT NULL UNIQUE
 );
 
-CREATE TABLE transactions
-(
-	id SERIAL PRIMARY KEY,
-	amount real DEFAULT 0,
-	new_balance real,
-	"type" transactionType DEFAULT 'dough',
-	description text NOT NULL,
-	"date" date DEFAULT NOW(),
-	user_id int references users(id) NOT NULL,
-	chore_id int references chores(id)
-);
-
-CREATE TABLE tasks
+/**********************************************************\
+ * Task :: The parts of a chore.
+\**********************************************************/
+CREATE TABLE task
 (
 	id SERIAL PRIMARY KEY,
 	description text NOT NULL UNIQUE
 );
 
-CREATE TABLE chore_assignments
+/**********************************************************\
+ * Assignment :: An assigned chore
+\**********************************************************/
+CREATE TABLE assignment
 (
 	id SERIAL PRIMARY KEY,
-	chore_id int references chores(id) NOT NULL,
-	user_id int references users(id) NOT NULL,
+	person_id int references person(id) NOT NULL,
+	chore_id int references chore(id) NOT NULL,
 	assigned date DEFAULT (NOW() AT TIME ZONE 'MDT'),
 	unassigned date
 );
 
-CREATE TABLE temporarary_chore_assignments
+/**********************************************************\
+ * Task_Chore :: conects tasks to chores
+\**********************************************************/
+CREATE TABLE chore_task
 (
 	id SERIAL PRIMARY KEY,
-	chore_id int references chores(id) NOT NULL,
-	user_id int references users(id) NOT NULL,
-	"date" date DEFAULT (NOW() AT TIME ZONE 'MDT')
+	task_id int references task(id) NOT NULL,
+	chore_id int references chore(id) NOT NULL,
+	task_minute_estimate real NOT NULL,
+	time_estimate_is_fixed bool DEFAULT false,
+	linked date DEFAULT (NOW() AT TIME ZONE 'MDT'),
+	unlinked date
 );
 
-CREATE TABLE chore_done
+/**********************************************************\
+ * Accomplishment :: When a task was completed
+\**********************************************************/
+CREATE TABLE accomplishment
 (
 	id SERIAL PRIMARY KEY,
-	user_id int references users(id) NOT NULL,
-	chore_id int references chores(id) NOT NULL,
-	"date" date DEFAULT (NOW() AT TIME ZONE 'MDT')
+	assignment_id int references assignment(id) NOT NULL,
+	task_id int references task(id) NOT NULL,
+	accomplished date DEFAULT (NOW() AT TIME ZONE 'MDT'),
+	choredough real
 );
 
-CREATE TABLE task_to_chore
+/**********************************************************\
+ * Transaction :: The transfer of Choredough
+\**********************************************************/
+CREATE TABLE transaction
 (
 	id SERIAL PRIMARY KEY,
-	task_id int references tasks(id) NOT NULL,
-	chore_id int references chores(id) NOT NULL,
-	task_minuet_estimate int NOT NULL,
-	task_completed bool DEFAULT false
+	amount real NOT NULL,
+	new_balance real, /* set by a trigger */
+	transaction_date date DEFAULT (NOW() AT TIME ZONE 'MDT'),
+	created_date timestamp DEFAULT (NOW() AT TIME ZONE 'MDT'),
+	description text NOT NULL,
+	transaction_type transactionType DEFAULT 'dough',
+	person_id int references person(id) NOT NULL,
+	chore_id int references assignment(id)
 );
 
---  Insert Transaction
+/*************************************************************\
+ * chores assigned to a person right now
+\*************************************************************/
+CREATE OR REPLACE VIEW current_chores_per_person AS
+SELECT chore_id, name, person_id
+FROM assignment a
+	INNER JOIN chore c ON a.chore_id = c.id
+WHERE 1=1
+	AND a.assigned <= (NOW() AT TIME ZONE 'MDT')
+	AND (a.unassigned IS NULL OR (NOW() AT TIME ZONE 'MDT') < unassigned)
+;
+
+/**************************************************************\
+ * the number of tasks done per person, per chore, by day
+\**************************************************************/
+CREATE OR REPLACE VIEW tasks_done_per_person_per_chore_by_day AS
+SELECT count(1) task_done_count, accomplished, person_id, chore_id
+FROM assignment a
+	INNER JOIN accomplishment ac ON (a.id = ac.assignment_id)
+WHERE 1=1
+GROUP BY accomplished, person_id, chore_id
+;
+
+/**************************************************************\
+ * the number of tasks assigned per person per chore right now
+\**************************************************************/
+CREATE OR REPLACE VIEW current_task_per_chore_per_person AS
+SELECT count(1) as task_count, person_id, tc.chore_id
+FROM assignment a
+	INNER JOIN chore_task tc ON ( 1=1
+		AND a.chore_id = tc.chore_id
+		AND a.assigned <= tc.linked
+		AND (a.unassigned IS NULL OR tc.linked < a.unassigned)
+		AND (tc.unlinked IS NULL OR tc.unlinked <= a.unassigned)
+	)
+WHERE 1=1
+	AND a.assigned <= (NOW() AT TIME ZONE 'MDT')
+	AND (a.unassigned IS NULL OR (NOW() AT TIME ZONE 'MDT') < a.unassigned)
+GROUP BY person_id, tc.chore_id
+;
+
+/**************************************************************\
+ * list the chores that are assigned and done right now
+\**************************************************************/
+-- (so that means that the number of tasks assigned right now and the number of tasks done right now
+--  are the same (per person, per chore))
+CREATE OR REPLACE VIEW chores_done_by_person AS
+SELECT ctpcpp.chore_id, name, ctpcpp.person_id
+FROM current_chores_per_person ccpp
+	JOIN current_task_per_chore_per_person ctpcpp
+		ON (ccpp.person_id = ctpcpp.person_id AND ccpp.chore_id = ctpcpp.chore_id)
+	JOIN tasks_done_per_person_per_chore_by_day tdpppcbd ON (1=1
+		AND ccpp.person_id = tdpppcbd.person_id
+		AND tdpppcbd.chore_id = ccpp.chore_id
+		AND ctpcpp.task_count = tdpppcbd.task_done_count
+	)
+WHERE 1=1
+;
+
+/**************************************************************\
+ * list the chores that are assigned and not done right now
+\**************************************************************/
+-- (so that means that the chores are assigned and
+-- not in the assigned and done right now table)
+CREATE OR REPLACE VIEW chores_not_done_by_person AS
+SELECT cdbp.chore_id, cdbp.name, cdbp.person_id
+	FROM current_chores_per_person ccpp
+		LEFT OUTER JOIN chores_done_by_person cdbp
+			ON (ccpp.chore_id = cdbp.chore_id AND ccpp.person_id = cdbp.person_id)
+	WHERE 1=1
+		AND cdbp.chore_id IS NULL
+;
+
+/******************************************************************************\
+ * # TRIGGER # INSERT Transaction
+\******************************************************************************/
 CREATE FUNCTION insert_transaction() RETURNS trigger AS $insert_transaction$
 BEGIN
-	update users set account_balance = account_balance + NEW.amount where id=NEW.user_id;
-	update transactions set new_balance = (SELECT account_balance FROM users WHERE id = NEW.user_id)
+	UPDATE person SET account_balance = account_balance + NEW.amount WHERE id=NEW.person_id;
+	UPDATE transaction SET new_balance = (SELECT account_balance FROM person WHERE id = NEW.person_id)
 	WHERE id=NEW.id;
 	RETURN NEW;
 END;
 $insert_transaction$ LANGUAGE plpgsql;
-CREATE TRIGGER insert_transaction AFTER INSERT ON transactions
+-- Create the Trigger
+CREATE TRIGGER insert_transaction AFTER INSERT ON transaction
 FOR EACH ROW EXECUTE PROCEDURE insert_transaction();
 
---  update chore_assignments
-CREATE FUNCTION update_chore_assignments() RETURNS trigger AS $update_chore_assignments$
+/******************************************************************************\
+ * # TRIGGER # Make an accomplishment (complete a task)
+\******************************************************************************/
+CREATE FUNCTION make_an_accomplishment() RETURNS trigger AS $make_an_accomplishment$
+DECLARE
+amount real;
+time_estimate real;
+chore int;
+BEGIN
+	-- if the associated task has a fixed time estimate set default choredough amount
+	chore := (SELECT chore_id FROM assignment WHERE id=NEW.assignment_id);
+	IF (SELECT time_estimate_is_fixed
+		FROM chore_task WHERE task_id = NEW.task_id AND chore_id=chore)
+	THEN
+		time_estimate := (SELECT task_minute_estimate FROM chore_task WHERE task_id = NEW.task_id);
+		UPDATE accomplishment SET choredough=time_estimate WHERE id=NEW.id;
+	END IF;
+	-- if all the tasks are done make a transaction after inserting
+	IF NOT EXISTS(SELECT count(1)
+		FROM assignment a
+			LEFT OUTER JOIN accomplishment ac ON a.id = ac.assignment_id
+		WHERE 1=1
+			AND a.id=NEW.assignment_id
+			AND ac.id IS NULL
+			AND ac.accomplished=NEW.accomplished)
+	THEN
+		amount := (SELECT sum(choredough) FROM accomplishment ac
+			INNER JOIN assignment a ON a.id=ac.assignment_id);
+		INSERT INTO transaction (amount, person_id, chore_id, new_balance, description)
+			VALUES (
+				amount,
+				(SELECT person_id FROM assignment WHERE assignment.id=NEW.assignment_id),
+				(SELECT chore_id FROM assignment WHERE assignment.id=NEW.assignment_id),
+				(SELECT account_balance FROM person WHERE person.id=(
+					SELECT person_id FROM assignment WHERE assignment.id=NEW.assignment_id)),
+				(SELECT name FROM chore WHERE id=(
+					SELECT chore_id FROM assignment WHERE assignment.id=NEW.assignment_id))
+			);
+	END IF;
+	-- if all the chore are done add to the streak
+	--  TODO finish this
+	--  IF NOT EXISTS SELECT count(1)
+	--    FROM person p
+	--      LEFT OUTER JOIN assignment a ON p.id = a.person_id
+	--    WHERE 1=1
+	--      AND a.assignment_id=New.assignment_id
+	--      AND ac.id IS NULL
+	--  IF NOT EXISTS(SELECT id FROM assignment WHERE person_id=NEW.person_id AND chore_completed=false)
+	--  THEN UPDATE person SET streak = streak + 1 WHERE id=NEW.person_id;
+	--  END IF;
+RETURN NEW;
+END;
+$make_an_accomplishment$ LANGUAGE plpgsql;
+-- Create the Trigger
+CREATE TRIGGER make_an_accomplishment AFTER INSERT ON accomplishment
+FOR EACH ROW EXECUTE PROCEDURE make_an_accomplishment();
+
+/******************************************************************************\
+ * # TRIGGER # Delete an accomplishment (uncomplete a task)
+\******************************************************************************/
+CREATE FUNCTION delete_an_accomplishment() RETURNS trigger AS $delete_an_accomplishment$
 DECLARE
 amount real;
 BEGIN
-	--  if the only thing that has changed is setting it to done make the transaction
-	IF NEW.chore_completed != OLD.chore_completed AND NEW.chore_completed = TRUE
-		AND NEW.user_id = OLD.user_id AND NEW.chore_id = OLD.chore_id
-		THEN
-		amount := (SELECT choredough FROM chores WHERE id=NEW.chore_id);
-		INSERT INTO transactions (amount, user_id, chore_id, new_balance, description)
-		VALUES (amount, NEW.user_id, NEW.chore_id,
-			(SELECT account_balance FROM users WHERE id=NEW.user_id) + amount,
-			(SELECT name FROM chores WHERE id=NEW.chore_id));
-		--  and complete all children tasks
-		UPDATE task_to_chore SET task_completed = true WHERE chore_id = NEW.chore_id;
-
-		--  if all the chores are done add to the streak
-		IF NOT EXISTS(SELECT id FROM chore_assignments WHERE user_id=NEW.user_id AND chore_completed=false)
-			THEN UPDATE users SET streak = streak + 1 WHERE id=NEW.user_id;
-END IF;
-END If;
---  if the only thing that has changed is setting the status to not done than add a negative
---  transaction.
-IF NEW.chore_completed != OLD.chore_completed AND NEW.chore_completed = FALSE
-	AND NEW.user_id = OLD.user_id AND NEW.chore_id = OLD.chore_id
+	--  if all the tasks are done make a negative transaction before deleting
+	IF NOT EXISTS(SELECT count(1)
+		FROM assignment a
+			LEFT OUTER JOIN accomplishment ac ON a.id = ac.assignment_id
+		WHERE 1=1
+			AND a.id=NEW.assignment_id
+			AND ac.id IS NULL
+			AND ac.accomplished=NEW.accomplished)
 	THEN
-	amount := (SELECT choredough FROM chores WHERE id=NEW.chore_id);
-	INSERT INTO transactions (amount, user_id, chore_id, new_balance, description)
-	VALUES (-amount, NEW.user_id, NEW.chore_id,
-		(SELECT account_balance FROM users WHERE id=NEW.user_id) - amount,
-		(SELECT name FROM chores WHERE id=NEW.chore_id));
-	--  if all the chores were done than we need to take one away from the streak
-	IF NOT EXISTS(SELECT id FROM chore_assignments WHERE user_id=NEW.user_id AND chore_completed=false AND chore_id!=NEW.chore_id)
-		THEN UPDATE users SET streak = streak - 1 WHERE id=NEW.user_id;
-END IF;
-END If;
+		amount := (SELECT sum(choredough) FROM accomplishment ac
+			INNER JOIN assignment a ON a.id=ac.assignment_id);
+		INSERT INTO transaction (amount, person_id, chore_id, new_balance, description)
+			VALUES (
+				-amount,
+				(SELECT person_id FROM assignment WHERE assignment.id=NEW.assignment_id),
+				(SELECT chore_id FROM assignment WHERE assignment.id=NEW.assignment_id),
+				(SELECT account_balance FROM person WHERE person.id=(
+					SELECT person_id FROM assignment WHERE assignment.id=NEW.assignment_id)),
+				(SELECT name FROM chore WHERE id=(
+					SELECT chore_id FROM assignment WHERE assignment.id=NEW.assignment_id))
+			);
+	END IF;
 RETURN NEW;
 END;
-$update_chore_assignments$ LANGUAGE plpgsql;
-CREATE TRIGGER update_chore_assignments AFTER UPDATE ON chore_assignments
-FOR EACH ROW EXECUTE PROCEDURE update_chore_assignments();
+$delete_an_accomplishment$ LANGUAGE plpgsql;
+CREATE TRIGGER delete_an_accomplishment BEFORE DELETE ON accomplishment
+FOR EACH ROW EXECUTE PROCEDURE delete_an_accomplishment();
 
-INSERT INTO users (name, is_admin, password)
+INSERT INTO person (name, is_admin, password)
 	VALUES ('Ammon', false, '$2y$10$hGjd2jiaH3v0tFTzWETZnOMdKrMCRHgTyXd.oj.c0Ta3Fw6HsRh7G'),
 	('Joshua', false, '$2y$10$kFll2Rrp1/ZD4gxz4G17tOb1yIGutxLm./o1X.ztZt9DfrnofDHuq'),
 	('Mattie', false, '$2y$10$zBTTW2eyc/l55Xg3/.ElIuGJD3oUBFn0Iq3QAeWmvEvKx4xG.e/h.'),
 	('Russell', true, '$2y$10$MBGWbw9gbNqKmxnq85lbSOCoRsZ.HexSmaUFx42cm7YG/7jWt.O0.'),
 	('Margie', true, '$2y$10$XvDa7KDL/w0aLcbWh5tKJelLi3zvb1UNv98/nrChoPhXXv3RvdwZW');
 
-INSERT INTO chores (name, choredough)
-	VALUES ('Bathroom – Downstairs', 5),
-	('Bathroom – Upstairs', 5),
-	('Batman - Downstairs', 5),
-	('Batman – Upstairs', 5),
-	('Bed', 0),
-	('Bedroom', 0),
-	('Bread', 30),
-	('Car wipe down & trash', 10),
-	('Critters', 15),
-	('Dishes – Breakfast', 15),
-	('Dishes – Dinner', 20),
-	('Dust', 15),
-	('Fingermarks – walls', 2),
-	('Fires', 5),
-	('Fix Breakfast', 15),
-	('Fix Dinner', 30),
-	('Fix Lunches', 15),
-	('Garbages', 5),
-	('Get Self Up', 0),
-	('Laundry – 1 batch', 10),
-	('Mop dining room, kitchen', 10),
-	('Mudroom & Bathroom', 5),
-	('Shovel Snow', 1),
-	('Vacuum – Car', 15),
-	('Vacuum Downstairs', 15),
-	('Vacuum Upstairs', 15),
-	('Windows', 3),
-	('Wood', 3),
-	('Special Assignment', 1);
+INSERT INTO chore (name)
+	VALUES ('Bathroom – Downstairs'),
+	('Bathroom – Upstairs'),
+	('Batman - Downstairs'),
+	('Batman – Upstairs'),
+	('Bed'),
+	('Bedroom'),
+	('Bread'),
+	('Car wipe down & trash'),
+	('Critters'),
+	('Dishes – Breakfast'),
+	('Dishes – Dinner'),
+	('Dust'),
+	('Fingermarks – walls'),
+	('Fires'),
+	('Fix Breakfast'),
+	('Fix Dinner'),
+	('Fix Lunches'),
+	('Garbages'),
+	('Get Self Up'),
+	('Laundry – 1 batch'),
+	('Mop dining room, kitchen'),
+	('Mudroom & Bathroom'),
+	('Shovel Snow'),
+	('Vacuum – Car'),
+	('Vacuum Downstairs'),
+	('Vacuum Upstairs'),
+	('Windows'),
+	('Wood'),
+	('Special Assignment');
 
-INSERT INTO tasks (description)
+INSERT INTO task (description)
 	VALUES ('Clean w/ cleaner toilet'),
 	('Clean w/ cleaner sink'),
 	('Clean w/ cleaner tub'),
@@ -205,7 +351,7 @@ INSERT INTO tasks (description)
 	('cleaner in toilet & sinks'),
 	('empty garbage'),
 	('organize shoes and remove all all illegal shoes'),
-	('shovel 1 minuet'),
+	('shovel 1 minute'),
 	('Bed'),
 	('Car wipe down & trash'),
 	('Critters'),
@@ -214,69 +360,66 @@ INSERT INTO tasks (description)
 	('Fix Lunch'),
 	('Get Self Up'),
 	('Windows'),
-	('Wood'),
-	('1 minuet hard work on project for Mom or Dad');
+	('Bring IN Wood'),
+	('Work hard on project for Mom or Dad');
 
-INSERT INTO transactions ("date", description, user_id)
-	VALUES ('2017-12-20'::timestamp, 'Starting Balance',
-		(Select id FROM users WHERE name='Mattie')),
-	('2017-12-20'::timestamp, 'Starting Balance',
-		(Select id FROM users WHERE name='Joshua')),
-	('2017-12-20'::timestamp, 'Starting Balance',
-		(Select id FROM users WHERE name='Ammon'));
+INSERT INTO transaction (amount, transaction_date, description, transaction_type, person_id)
+	VALUES (12.25, '2018-02-10'::timestamp, 'Paid for 12/21 – 2/9', 'jurnaled',
+		(Select id FROM person WHERE name='Mattie')),
+	(4.00, '2018-02-10'::timestamp, 'Consecutive days FROM 2/1 – 2/9', 'bonus',
+		(Select id FROM person WHERE name='Mattie')),
+	(7.83, '2018-02-10'::timestamp, 'Paid for 12/21 – 2/9','jurnaled',
+		(Select id FROM person WHERE name='Joshua')),
+	(2.50, '2018-02-10'::timestamp, 'Consecutive days FROM 2/1 – 2/9', 'bonus',
+		(Select id FROM person WHERE name='Joshua')),
+	(16.50, '2018-02-10'::timestamp, 'Paid for 12/21 – 2/9','jurnaled',
+		(Select id FROM person WHERE name='Ammon')),
+	(2.00, '2018-02-10'::timestamp, 'Consecutive days FROM 2/1 – 2/9', 'bonus',
+		(Select id FROM person WHERE name='Ammon')),
+	(-12.99, '2018-02-10'::timestamp, 'Purchased bow saw at Ace', 'purchase',
+		(Select id FROM person WHERE name='Ammon'));
 
-INSERT INTO transactions ("date", amount, description, user_id)
-	VALUES ('2018-02-10'::timestamp, 12.25, 'Paid for 12/21 – 2/9',
-		(Select id FROM users WHERE name='Mattie')),
-	('2018-02-10'::timestamp, 4.00, 'Consecutive days FROM 2/1 – 2/9',
-		(Select id FROM users WHERE name='Mattie')),
-	('2018-02-10'::timestamp, 7.83, 'Paid for 12/21 – 2/9',
-		(Select id FROM users WHERE name='Joshua')),
-	('2018-02-10'::timestamp, 2.50, 'Consecutive days FROM 2/1 – 2/9',
-		(Select id FROM users WHERE name='Joshua')),
-	('2018-02-10'::timestamp, 16.50, 'Paid for 12/21 – 2/9',
-		(Select id FROM users WHERE name='Ammon')),
-	('2018-02-10'::timestamp, 2.00, 'Consecutive days FROM 2/1 – 2/9',
-		(Select id FROM users WHERE name='Ammon')),
-	('2018-02-10'::timestamp, -12.99, 'Purchased bow saw at Ace',
-		(Select id FROM users WHERE name='Ammon'));
-
-INSERT INTO chore_assignments (user_id, chore_id)
+INSERT INTO assignment (person_id, chore_id)
 	VALUES (1,15), (1, 10), (1, 22), (1, 9), (1, 5), (1, 6), (1, 19),
 	(2, 1), (2, 3), (2, 7), (2, 25), (2, 5), (2, 6), (2, 19),
 	(3, 2), (3, 14), (3, 28), (3, 5), (3, 6), (3, 19);
 
-INSERT INTO task_to_chore (chore_id, task_id, task_minuet_estimate)
-	VALUES (1, 1, 1), (1, 2, 1), (1, 3, 1), (1, 4, .5), (1, 5, 1), (1, 6, .5),
-	(2, 1, 1), (2, 2, 1), (2, 3, 1), (2, 4, .5), (2, 5, 1), (2, 6, .5),
-	(3, 7, 5),
-	(4, 7, 5),
-	(5, 32, 0),
-	(6, 8, 0),
-	(7, 11, 30),
-	(8, 33, 10),
-	(9, 34, 15),
-	(10, 12, 2), (10, 13, 2), (10, 14, 1), (10, 15, 2),
-	(10, 16, 3), (10, 17, 2), (10, 18, 2), (10, 19, 1),
-	(11, 12, 2), (11, 13, 2), (11, 14, 3), (11, 15, 2),
-	(11, 16, 4), (11, 17, 3), (11, 18, 3), (11, 19, 1),
-	(12, 20, 15),
-	(13, 21, 2),
-	(14, 22, 5),
-	(15, 35, 15),
-	(16, 36, 30),
-	(17, 37, 15),
-	(18, 23, 5),
-	(19, 38, 0),
-	(20, 24, 2), (20, 25, 6), (20, 26, 2),
-	(21, 5, 5),
-	(22, 27, 1), (22, 28, 2), (22, 29, 1), (22, 30, 1),
-	(23, 31, 1),
-	(24, 9, 15),
-	(25, 9, 15),
-	(26, 9, 15),
-	(27, 39, 3),
-	(28, 40, 3),
-	(29, 41, 1);
+INSERT INTO chore_task (chore_id, task_id, task_minute_estimate, time_estimate_is_fixed)
+	VALUES (1, 1, 1, true), (1, 2, 1, true), (1, 3, 1, true),
+	(1, 4, .5, true), (1, 5, 1, true), (1, 6, .5, true),
+	(2, 1, 1, true), (2, 2, 1, true), (2, 3, 1, true),
+	(2, 4, .5, true), (2, 5, 1, true), (2, 6, .5, true),
+	(3, 7, 5, true),
+	(4, 7, 5, true),
+	(5, 32, 0, true),
+	(6, 8, 0, true),
+	(7, 11, 30, true),
+	(8, 33, 10, true),
+	(9, 34, 15, true),
+	(10, 12, 2, true), (10, 13, 2, true), (10, 14, 1, true), (10, 15, 2, true),
+	(10, 16, 3, true), (10, 17, 2, true), (10, 18, 2, true), (10, 19, 1, true),
+	(11, 12, 2, true), (11, 13, 2, true), (11, 14, 3, true), (11, 15, 2, true),
+	(11, 16, 4, true), (11, 17, 3, true), (11, 18, 3, true), (11, 19, 1, true),
+	(12, 20, 15, true),
+	(13, 21, 2, true),
+	(14, 22, 5, true),
+	(15, 35, 15, true),
+	(16, 36, 30, true),
+	(17, 37, 15, true),
+	(18, 23, 5, true),
+	(19, 38, 0, true),
+	(20, 24, 2, true), (20, 25, 6, true), (20, 26, 2, true),
+	(21, 5, 5, true),
+	(22, 27, 1, true), (22, 28, 2, true), (22, 29, 1, true), (22, 30, 1, true),
+	(23, 31, 1, false),
+	(24, 9, 15, true),
+	(25, 9, 15, true),
+	(26, 9, 15, true),
+	(27, 39, 3, true),
+	(28, 40, 3, false),
+	(29, 41, 1, false);
 
-UPDATE users SET streak=2 WHERE name='Ammon';
+INSERT INTO accomplishment (assignment_id, task_id, accomplished)
+	VALUES (1, 1, '2018-10-17'::date);
+
+UPDATE person SET streak=2 WHERE name='Ammon';

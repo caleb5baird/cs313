@@ -1,0 +1,29 @@
+<div class='choreboard'>
+	<div class='choreboardHeader'>
+		<a href='/user/account-history.php?userId=$userId' class='balance'>
+			Account Balance = $ <span id="accountBalance"></span>
+		</a>
+		<span class='streak'><span id="streakNumber"></span>streak day streak!</span>
+		<div class='name'></div>
+	</div>
+	<div class='choreCategory'>
+		<h3>To Do:</h3>
+		<ul class='chores' id='$userId-toDo'>
+		</ul>
+	</div>
+	<div class='choreCategory'>
+		<h3>Done:</h3>
+		<ul class='chores' id='$userId-done'>
+		</ul>
+	</div>
+	<div class='choreCategory'>
+		<h3>Additional Chores:</h3>
+		<ul class='chores' id='$userId-additionalChores'>
+		</ul>
+	</div>
+</div>
+<?php
+require("php-chunks/displayChores.php");
+require("php-chunks/displayChores.php");
+			require("php-chunks/displayChores.php");
+?>

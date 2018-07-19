@@ -1,0 +1,38 @@
+After completing the assignment, please answer the questions in this text file and submit it to I-Learn.
+
+1. Copy and paste the URL for your web application:
+	https://safe-lake-68036.herokuapp.com/family-chore-board
+
+2. Copy and paste the URL for your source code repository (e.g., GitHub):
+	https://github.com/caleb5baird/cs313/tree/master/web/family-chore-board
+
+3. Briefly list and describe the elements of the application that are functioning. Include any special instructions about how to login and/or use your application.
+	Elements that are working:
+	1) Login queries the database to see if the name and password are correct (it does not do this securely so for now all of the passwords are simply 'password').
+	2) Session variables are used so that information specific to the person logged in is displayed.
+	3) When a child logs in they see a dash board three categories of chores, "To Do", "Done", and "Additional Chores".
+	4) Each chore is a link that goes to a generated page that lists the sub tasks in that chore.
+	5) The dashboard also shows the current account balance which is a link to the account history page.
+	6) The account history page shows each transaction, including the date, description, amount, and the balance before and after the transaction.
+	7) When a parent logs in they see a section for each child with the chores separated in their categories.
+	8) PSQL functions and triggers automatically update user account balances when transactions are inserted, deleted, or updated.
+
+4. Briefly describe any pieces of the assignment that are not yet working correctly.
+	Not working correctly
+	1) No data can be changed from the front end yet.
+	2) There is virtually no style applied. However everything is linked together correctly so that it can be styled. And the html was designed with styling in mind so that it is mostly ready to just add to the stylesheet.
+	3) Right now all of the links are to new pages. I plan to make some of them ajax requests that load up an in page element so that I do not have to leave the dashboard.
+	4) When an admin goes the the account history page of one of the kids it right now will desplay the account history page for the admin which is of course, empty. I need to decide how to fix that.
+
+5. Briefly describe the "coolest" thing you learned while completing this assignment.
+	I learned so much in this assignment. A lot of PHP, and A LOT of PSQL however definitely the coolest thing that I learned was about triggers and functions in PSQL. My functions, and triggers to keep my account balances in sync with the transactions will I believe work to keep the total balance correct, even with updated transactions. However the account history will look weird once a transaction has been updated or deleted. (because that change should effect the other transactions. But currently does not. )
+
+6. Why should you create a separate user account for your application to access the database?
+	I should create a separate user account for the application to access the database so that I can restrict what access the application has. In this way even if my application is compromised my database will not be. Additionally I could put restraints. Like not allowing certain access to the database. Since some updates could break the functionality of other parts.
+
+7. Please select the category you feel best describes your assignment:
+E - Shows creativity and excels above and beyond requirements
+
+8. Provide a brief justification (1-2 sentences) for selecting that category.
+	I believe that the work that I did to keep the account balances and transactions in sync show creativity and excels beyond requirements.
+

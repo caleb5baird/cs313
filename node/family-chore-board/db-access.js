@@ -1,156 +1,218 @@
+const { Pool } = require('pg');
+const connectionString = process.env.DATABASE_URL
+	|| 'postgres://postgres:password@choreboard-pg:5432/postgres';
+const pool = new Pool({connectionString: connectionString});
+
 function getUserFromDb(userId, callback) {
-	console.log("Getting User from DB...");
-	console.log("userId = " + userId)
+	console.log('Getting User from DB...');
+	console.log('userId = ' + userId)
 	// set up the sql
-	var query = "SELECT id, name, is_admin AS isAdmin, account_balance AS accountBalance, streak "
-	+ " FROM users WHERE id=$1::int";
-	console.log("query = " + query);
-	var params = [userId];
+	var query = 'SELECT id, name, is_admin AS isAdmin, account_balance AS accountBalance, streak '
+	+ ' FROM person WHERE id=$1::int';
+	console.log('query = ' + query);
+	let params = [userId];
 	// make the database request
 	pool.query(query, params, function(err, result) {
 		if(err) {
-			console.log("Error in query: ")
+			console.log('Error in query: ')
 			console.log(err)
 			callback(err, null);
 		}
-		// console.log("Found res: " + JSON.stringify(result.rows));
+		// console.log('Found res: ' + JSON.stringify(result.rows));
 		callback(null, result.rows);
 	});
 }
 
-function getChoreFromDb(userId, category, callback) {
-	console.log("Getting chores from DB...");
-	console.log("category = " + category)
-	console.log("userId = " + userId)
+function getAssignmentsByCategoryFromDb(userId, date, category, callback) {
+	console.log('Entering getChoresFromDB in dbAccess');
+	console.log('Getting chore from DB...');
+	console.log('category = ' + category);
+	console.log('userId = ' + userId);
+	pgDate = pgFormatDate(date);
+	console.log('pgDate = ' + pgDate);
+
 	// set up the sql
-	var select = "SELECT c.name AS name, c.id AS userId, u.id As userId FROM users u "
-		+ "INNER JOIN chore_assignments ca ON u.id=ca.user_id "
-		+ "INNER JOIN chores c ON ca.chore_id=c.id";
 	var query;
-	var params;
+	let params;
 	// handle the difforent category requests
 	switch (category) {
 		case 'to-do':
-			query = select + " WHERE u.id=$1::int ORDER BY c.id"
-			params = [userId];
+			query = 'SELECT c.id AS choreid, a.id AS assignmentid, c.name, a.assigned, a.unassigned FROM chore c '
+				+ 'INNER JOIN assignment a ON a.chore_id=c.id AND a.person_id=$1::int '
+				+ 'WHERE a.assigned <= $2::date '
+				+ 'AND (a.unassigned is NULL OR $2::date < unassigned) ORDER BY c.id';
+			params = [userId, pgDate];
 			break;
 		case 'done':
-			query = select + " WHERE u.id=$1::int ORDER BY c.id"
+			// TODO: fix this query
+			query = 'SELECT name, chore_id AS choreid FROM chores_done_by_person WHERE person_id = $1::int'
 			params = [userId];
 			break;
 		case 'unassigned':
-			query = "SELECT id, name, choredough id FROM chores WHERE id NOT IN "
-				+ "(SELECT chore_id FROM chore_assignments)";
+			query = 'SELECT c.id as choreid, c.name FROM chore c LEFT OUTER JOIN assignment a '
+				+ 'ON c.id=a.chore_id AND a.assigned <= $1::date '
+				+ 'AND (a.unassigned is NULL OR $1::date < unassigned) '
+				+ 'WHERE a.id IS NULL ORDER BY c.id'
+			params = [pgDate];
 			break;
 		default:
+			let error = 'Incorrect category: ' + category;
+			console.log(error);
+			callback(error, null);
+			return;
 	}
-	console.log("query = " + query);
+	console.log('query = ' + query);
 
 	// make the database request
 	pool.query(query, params, function(err, result) {
 		if(err) {
-			console.log("Error in query: ")
+			console.log('Error in query: ')
 			console.log(err)
 			callback(err, null);
 		}
-		// console.log("Found res: " + JSON.stringify(result.rows));
+		// console.log('Found res: ' + JSON.stringify(result.rows));
 		callback(null, result.rows);
 	});
 }
 
-// function getChoreFromDb(chore, callback) {
-//    let query = 'UPDATE chores c INNER JOIN chore_assignments ca ON c.id=ca.user_id '
-//       + 'SET (c.name=$2::varchar(100), c.choredough=$3::real, ca.user_id=$4::int,'
-//       + ' assigned=$5::date, unassigned=$6::date) '
-//       + 'WHERE c.id=$1::int';
-//    let params = [choreId, name, choredough, userId, assignedDate, unassignedDate];
-//    pool.query(query, params, function(err, result) {
-//       if(err) {
-//          console.log("Error in query: ")
-//          console.log(err)
-//          callback(err, null);
-//       }
-//       // console.log("Found res: " + JSON.stringify(result.rows));
-//       callback(null, result.rows);
-//    });
-// }
+function getChoreFromDb(choreId, callback) {
+	var query = 'SELECT name, id AS choreId FROM chore WHERE id=$1::int'
+	let params = [choreId];
+	pool.query(query, params, function(err, result) {
+			if(err) {
+				console.log('Error in query: ')
+				console.log(err)
+				callback(err, null);
+			}
+			callback(null, result.rows);
+	});
+}
 
-function getTasksFromDb(choreId, callback) {
-	console.log("Getting tasks from DB...");
-	console.log("choreId = " + choreId)
+function getChoreTasksFromDb(choreId, date, callback) {
+	console.log('Entering getChoreTasksFromDb in dbAccess');
+	console.log('Getting task from DB...');
+	console.log('choreId = ' + choreId)
+	pgDate = pgFormatDate(date);
+	console.log('pgDate = ' + pgDate);
+
+	//TODO:: figure out how to return weather the task is completed or not.
 	// set up the sql
-	var query = "SELECT t.description, t.id AS taskId, ttc.task_completed AS completed "
-		+ "FROM tasks t "
-		+ "INNER JOIN task_to_chore ttc ON t.id = ttc.task_id "
-		+ "INNER JOIN chores c ON ttc.chore_id = c.id "
-		+ "WHERE c.id=$1::int ORDER BY t.id";
-	console.log("query = " + query);
+	var query = 'SELECT t.description, t.id AS taskId, tc.task_minute_estimate, '
+		+ 'tc.time_estimate_is_fixed, tc.linked, tc.unlinked '
+		+ 'FROM task t '
+			+ 'INNER JOIN chore_task tc ON t.id = tc.task_id '
+			+ 'INNER JOIN chore c ON tc.chore_id = c.id '
+		+ 'WHERE 1=1 '
+			+ 'AND c.id=$1::int '
+			+ 'AND tc.linked <= $2::date '
+			+ 'AND (tc.unlinked is NULL OR $2::date < unlinked) '
+		+ 'ORDER BY t.id';
+	console.log('query = ' + query);
 	// populate the parameteres we wil use to fill the placehoders in the query
-	var params = [choreId];
+	let params = [choreId, pgDate];
 
 	// make the database request
 	pool.query(query, params, function(err, result) {
 		if(err) {
-			console.log("Error in query: ")
+			console.log('Error in query: ')
 			console.log(err)
 			callback(err, null);
 		}
-		// console.log("Found res: " + JSON.stringify(result.rows));
+		// console.log('Found res: ' + JSON.stringify(result.rows));
 		callback(null, result.rows);
 	});
 }
 
 function getTransactionsFromDb(userId, callback) {
-	console.log("Getting transactions from DB...");
-	console.log("userId = " + userId)
+	console.log('Getting transaction from DB...');
+	console.log('userId = ' + userId)
 	// set up the sql
-	var query = "SELECT date, type, description, amount, newBalance "
-		+ "FROM transactions WHERE user_id=$1::int ORDER BY date DESC, id DESC";
-	console.log("query = " + query);
+	var query = 'SELECT transaction_date, transaction_type, description, amount, new_balance '
+		+ 'FROM transaction WHERE person_id=$1::int ORDER BY transaction_date DESC, id DESC';
+	console.log('query = ' + query);
 	// populate the parameteres we wil use to fill the placehoders in the query
-	var params = [userId];
+	let params = [userId];
 
 	// make the database request
 	pool.query(query, params, function(err, result) {
 		if(err) {
-			console.log("Error in query: ")
+			console.log('Error in query: ')
 			console.log(err)
 			callback(err, null);
 		}
-		// console.log("Found res: " + JSON.stringify(result.rows));
+		// console.log('Found res: ' + JSON.stringify(result.rows));
 		callback(null, result.rows);
 	});
 
 }
 
-function addUserToDb(username, password, isAdmin, callback) {
-	console.log("Adding User to DB...");
-	console.log("Username = " + username);
-	console.log("Password = " + password);
-	console.log("isAdmin = " + is_admin);
+function addAccomplishment(assignmentId, taskId, callback) {
+	console.log('Adding accomplishment to DB...');
+	console.log('assignmentId = ' + assignmentId);
+	console.log('taskId = ' + taskId);
 	// set up the sql
-	var query = "INSERT INTO users (name, password, is_admin) "
-		+ " VALUES ($1::varchar(80), $2::varchar(80), $3::bool)";
-	console.log("query = " + query);
+	var query = 'INSERT INTO accomplishment (assignment_id, task_id) '
+		+ 'VALUES ($1::int, $2::int)';
+	console.log('query = ' + query);
 	// populate the parameteres we wil use to fill the placehoders in the query
-	var params = [username, password, isAdmin];
+	let params = [assignmentId, taskId];
+	console.log('params: [',assignmentId,taskId,']');
 
 	// make the database request
 	pool.query(query, params, function(err, result) {
 		if(err) {
-			console.log("Error in query: ")
+			console.log('Error in query: ')
 			console.log(err)
 			callback(err, null);
 		}
-		// console.log("Found res: " + JSON.stringify(result.rows));
 		callback(null, result.rows);
 	});
 }
 
-module.export = {
+function addUser(username, password, isAdmin, callback) {
+	console.log('Adding User to DB...');
+	console.log('Username = ' + username);
+	console.log('Password = ' + password);
+	console.log('isAdmin = ' + isAdmin);
+	// set up the sql
+	var query = 'INSERT INTO person (name, password, is_admin) '
+		+ ' VALUES ($1::varchar(80), $2::varchar(80), $3::bool)';
+	console.log('query = ' + query);
+	// populate the parameteres we wil use to fill the placehoders in the query
+	let params = [username, password, isAdmin];
+
+	// make the database request
+	pool.query(query, params, function(err, result) {
+		if(err) {
+			console.log('Error in query: ')
+			console.log(err)
+			callback(err, null);
+		}
+		// console.log('Found res: ' + JSON.stringify(result.rows));
+		callback(null, result.rows);
+	});
+}
+
+/******************************************************************************\
+ * convert js dates to pq dates
+\******************************************************************************/
+function pgFormatDate(date) {
+	/* Via http://stackoverflow.com/questions/3605214/javascript-add-leading-zeroes-to-date */
+	function zeroPad(d) {
+		return ("0" + d).slice(-2)
+	}
+
+	var parsed = new Date(date)
+
+	return [parsed.getUTCFullYear(), zeroPad(parsed.getMonth() + 1), zeroPad(parsed.getDate())].join("-");
+}
+
+module.exports = {
 	getUserFromDb: getUserFromDb,
+	getAssignmentsByCategoryFromDb: getAssignmentsByCategoryFromDb,
 	getChoreFromDb: getChoreFromDb,
-	getTasksFromDb: getTasksFromDb,
-	addUserToDb: addUserToDb,
+	getChoreTasksFromDb: getChoreTasksFromDb,
+	addUser: addUser,
+	addAccomplishment: addAccomplishment,
 	getTransactionsFromDb: getTransactionsFromDb
 }

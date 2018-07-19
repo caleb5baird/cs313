@@ -1,0 +1,21 @@
+{
+  "name": "family-chore-board-ejs",
+  "version": "1.0.0",
+  "description": "The ejs implimentation of the Family Choreboard",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon --watch ./ index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Caleb Baird",
+  "license": "ISC",
+  "dependencies": {
+    "ejs": "^2.6.1",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
+    "pg": "^7.4.3"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.3"
+  }
+}

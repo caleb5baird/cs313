@@ -3,19 +3,29 @@
   "version": "1.0.0",
   "description": "An aplication to track the family chores",
   "main": "index.js",
+  "private": true,
   "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npm-run-parallel server:start client:start",
+    "build": "npm run client:build && rm -rf public && mv client/build public",
+    "client:start": "cd client; pwd; npm start",
+    "client:build": "cd client; npm run build",
+    "client:test": "cd client; npm run test",
+    "client:eject": "cd client; npm run eject",
+    "server:start": "nodemon --watch ./ index.js",
+    "server:test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ejs": "^2.6.1",
-    "eslint": "^5.0.1",
     "express": "^4.16.3",
     "express-session": "^1.15.6",
     "html": "^1.0.0",
     "pg": "^7.4.3",
     "react": "^16.4.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.0.1",
+    "nodemon": "^1.18.1",
+    "npm-run-parallel": "^0.6.0"
   }
 }
