@@ -39,13 +39,17 @@ function getAssignmentsByCategoryFromDb(userId, date, category, callback) {
 		case 'to-do':
 			query = 'SELECT c.id AS choreid, a.id AS assignmentid, c.name, a.assigned, a.unassigned FROM chore c '
 				+ 'INNER JOIN assignment a ON a.chore_id=c.id AND a.person_id=$1::int '
+				+ 'LEFT OUTER JOIN chores_done_by_person cdbp on cdbp.chore_id=c.id '
 				+ 'WHERE a.assigned <= $2::date '
+				+ 'AND cdbp.chore_id IS NULL '
 				+ 'AND (a.unassigned is NULL OR $2::date < unassigned) ORDER BY c.id';
 			params = [userId, pgDate];
 			break;
 		case 'done':
 			// TODO: fix this query
-			query = 'SELECT name, chore_id AS choreid FROM chores_done_by_person WHERE person_id = $1::int'
+			query = 'SELECT name, cdbp.chore_id AS choreid, a.id AS assignmentid FROM chores_done_by_person cdbp '
+			+ 'INNER JOIN assignment a ON a.chore_id=cdbp.chore_id AND a.person_id=cdbp.person_id '
+			+ 'WHERE a.person_id = $1::int'
 			params = [userId];
 			break;
 		case 'unassigned':
@@ -88,20 +92,29 @@ function getChoreFromDb(choreId, callback) {
 	});
 }
 
-function getChoreTasksFromDb(choreId, date, callback) {
+function getChoreTasksFromDb(choreId, date, assignmentId, callback) {
 	console.log('Entering getChoreTasksFromDb in dbAccess');
 	console.log('Getting task from DB...');
 	console.log('choreId = ' + choreId)
 	pgDate = pgFormatDate(date);
 	console.log('pgDate = ' + pgDate);
 
-	//TODO:: figure out how to return weather the task is completed or not.
-	// set up the sql
+	let params = [choreId, pgDate];
+	let assignmentJoin = '';
+	let assignmentWhere = '';
+	let assignmentSelect= '';
+	console.log('assignmentId = ', assignmentId);
+	if(assignmentId && assignmentId !== 'undefined'){
+		params.push(assignmentId);
+		assignmentSelect = ', a.id AS isCompleted '
+		assignmentJoin = 'LEFT JOIN accomplishment a ON a.task_id=t.id AND a.assignment_id=$3::int ';
+	}
 	var query = 'SELECT t.description, t.id AS taskId, tc.task_minute_estimate, '
-		+ 'tc.time_estimate_is_fixed, tc.linked, tc.unlinked '
+		+ 'tc.time_estimate_is_fixed, tc.linked, tc.unlinked ' + assignmentSelect
 		+ 'FROM task t '
 			+ 'INNER JOIN chore_task tc ON t.id = tc.task_id '
 			+ 'INNER JOIN chore c ON tc.chore_id = c.id '
+			+ assignmentJoin
 		+ 'WHERE 1=1 '
 			+ 'AND c.id=$1::int '
 			+ 'AND tc.linked <= $2::date '
@@ -109,7 +122,6 @@ function getChoreTasksFromDb(choreId, date, callback) {
 		+ 'ORDER BY t.id';
 	console.log('query = ' + query);
 	// populate the parameteres we wil use to fill the placehoders in the query
-	let params = [choreId, pgDate];
 
 	// make the database request
 	pool.query(query, params, function(err, result) {
@@ -169,6 +181,28 @@ function addAccomplishment(assignmentId, taskId, callback) {
 	});
 }
 
+function addAssignment(userId, choreId, callback) {
+	console.log('Adding assignment to DB...');
+	console.log('userId = ' + userId);
+	console.log('choreId = ' + choreId);
+	// set up the sql
+	var query = 'INSERT INTO assignment (person_id, chore_id) '
+		+ 'VALUES ($1::int, $2::int) RETURNING id ';
+	console.log('query = ' + query);
+	// populate the parameteres we wil use to fill the placehoders in the query
+	let params = [userId, choreId];
+
+	// make the database request
+	pool.query(query, params, function(err, result) {
+		if(err) {
+			console.log('Error in query: ')
+			console.log(err)
+			callback(err, null);
+		}
+		callback(null, result.rows);
+	});
+}
+
 function addUser(username, password, isAdmin, callback) {
 	console.log('Adding User to DB...');
 	console.log('Username = ' + username);
@@ -189,6 +223,27 @@ function addUser(username, password, isAdmin, callback) {
 			callback(err, null);
 		}
 		// console.log('Found res: ' + JSON.stringify(result.rows));
+		callback(null, result.rows);
+	});
+}
+
+function removeAccomplishment(assignmentId, taskId, callback) {
+	console.log('Removeing accomplishment to DB...');
+	console.log('assignmentId = ' + assignmentId);
+	console.log('taskId = ' + taskId);
+	// set up the sql
+	var query = 'DELETE FROM accomplishment WHERE assignment_id=$1::int AND task_id=$2::int'
+	console.log('query = ' + query);
+	let params = [assignmentId, taskId];
+	console.log('params: [',assignmentId,taskId,']');
+
+	// make the database request
+	pool.query(query, params, function(err, result) {
+		if(err) {
+			console.log('Error in query: ')
+			console.log(err)
+			callback(err, null);
+		}
 		callback(null, result.rows);
 	});
 }
@@ -214,5 +269,7 @@ module.exports = {
 	getChoreTasksFromDb: getChoreTasksFromDb,
 	addUser: addUser,
 	addAccomplishment: addAccomplishment,
+	addAssignment: addAssignment,
+	removeAccomplishment: removeAccomplishment,
 	getTransactionsFromDb: getTransactionsFromDb
 }

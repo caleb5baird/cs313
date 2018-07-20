@@ -5,13 +5,14 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "start": "npm-run-parallel server:start client:start",
+    "start": "node index.js",
+    "dev:start": "npm-run-parallel server:start client:start",
     "build": "npm run client:build && rm -rf public && mv client/build public",
     "client:start": "cd client; pwd; npm start",
     "client:build": "cd client; npm run build",
     "client:test": "cd client; npm run test",
     "client:eject": "cd client; npm run eject",
-    "server:start": "nodemon --watch ./ index.js",
+    "server:start": "nodemon --watch ./ --ignore ./client index.js",
     "server:test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -24,9 +25,9 @@
     "react": "^16.4.1"
   },
   "devDependencies": {
-    "eslint": "^5.0.1",
     "nodemon": "^1.18.1",
-    "npm-run-parallel": "^0.6.0"
+    "npm-run-parallel": "^0.6.0",
+    "eslint": "^5.0.1"
   },
   "repository": {
     "type": "git",
@@ -39,6 +40,6 @@
     "express"
   ],
   "engines": {
-    "node":"8.11.3"
+    "node": "8.11.3"
   }
 }

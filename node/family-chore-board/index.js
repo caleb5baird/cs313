@@ -40,24 +40,21 @@ app
 	.get('/user/:userId/assignment/:choreId', getAssignment)
 	.get('/chores', getChores)
 	.get('/chore/:choreId', getChore)
+	.get('/chore/:choreId/tasks/:assignmentId', getChoreTasks)
 	.get('/chore/:choreId/tasks', getChoreTasks)
 	.get('/chore-task/:choreTaskId', getChoreTask)
 	.get('/tasks', getTasks)
 	.get('/task/:taskId', getTask)
-;
 
-app
 	.post('/login', login)
 	.post('/logout', logout)
 	.post('/user', addUser)
 	.post('/chore', addChore)
 	.post('/task', addTask)
 	.post('/assignment/:assignmentId/task/:taskId', addAccomplishment)
-	.post('/user/:userId/chore', addAssignment)
+	.post('/user/:userId/chore/:choreId', addAssignment)
 	.post('/chore/:choreId/task', addChoreTask)
-;
 
-app
 	.put('/user/:userId', updateUser)
 	.put('/user/:userId/chore/:choreId', updateAssignment)
 	.put('/assignment/:assignmentId', updateAssignment)
@@ -65,6 +62,8 @@ app
 	.put('/chore/:choreId/task/:taskId', updateChoreTask)
 	.put('/chore-task/:choreTaskId', updateChoreTask)
 	.put('/task/:taskId', updateTask)
+
+	.delete('/assignment/:assignmentId/task/:taskId', removeAccomplishment)
 ;
 
 /******************************************************************************\
@@ -206,9 +205,10 @@ function getChoreTasks(req, res) {
 	console.log('Entering getChoreTasks in index.js');
 	let choreId = req.params.choreId;
 	let date = req.query.date || Date.now();
+	let assignmentId = req.params.assignmentId;
 	console.log('choreId = ', choreId)
 	console.log('date = ', date)
-	dbAccess.getChoreTasksFromDb(choreId, date, function(err, result) {
+	dbAccess.getChoreTasksFromDb(choreId, date, assignmentId, function(err, result) {
 		if(err || result === null) {
 			// the data is false
 			res.status(500).json({success: false, data: err});
@@ -313,6 +313,19 @@ function addAccomplishment(req, res) {
 }
 
 function addAssignment(req, res) {
+	let userId = req.params.userId;
+	let choreId = req.params.choreId;
+	console.log('userId = ' + userId);
+	console.log('choreId = ' + choreId);
+	dbAccess.addAssignment(userId, choreId, function(err, result) {
+		if(err || result === null) {
+			// the data is false
+			res.status(500).json({success: false, data: err});
+		} else {
+			var accomplishment = result;
+			res.status(200).json(accomplishment);
+		}
+	});
 }
 
 function addChoreTask(req, res) {
@@ -350,5 +363,24 @@ function updateChoreTask(req, res) {
 }
 
 function updateTask(req, res) {
+}
+
+/*############################################################################*\
+ *# PUT FUNCTIONS
+\*############################################################################*/
+function removeAccomplishment(req, res) {
+	let assignmentId = req.params.assignmentId;
+	let taskId = req.params.taskId;
+	console.log('assignmentId = ' + assignmentId);
+	console.log('taskId = ' + taskId);
+	dbAccess.removeAccomplishment(assignmentId, taskId, function(err, result) {
+		if(err || result === null) {
+			// the data is false
+			res.status(500).json({success: false, data: err});
+		} else {
+			var accomplishment = result;
+			res.status(200).json(accomplishment);
+		}
+	});
 }
 

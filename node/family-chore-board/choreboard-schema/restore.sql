@@ -204,7 +204,7 @@ BEGIN
 	IF (SELECT time_estimate_is_fixed
 		FROM chore_task WHERE task_id = NEW.task_id AND chore_id=chore)
 	THEN
-		time_estimate := (SELECT task_minute_estimate FROM chore_task WHERE task_id = NEW.task_id);
+		time_estimate := (SELECT task_minute_estimate FROM chore_task WHERE task_id = NEW.task_id AND chore_id=chore);
 		UPDATE accomplishment SET choredough=time_estimate WHERE id=NEW.id;
 	END IF;
 	-- if all the tasks are done make a transaction after inserting
@@ -259,24 +259,24 @@ BEGIN
 		FROM assignment a
 			LEFT OUTER JOIN accomplishment ac ON a.id = ac.assignment_id
 		WHERE 1=1
-			AND a.id=NEW.assignment_id
+			AND a.id=OLD.assignment_id
 			AND ac.id IS NULL
-			AND ac.accomplished=NEW.accomplished)
+			AND ac.accomplished=OLD.accomplished)
 	THEN
 		amount := (SELECT sum(choredough) FROM accomplishment ac
 			INNER JOIN assignment a ON a.id=ac.assignment_id);
 		INSERT INTO transaction (amount, person_id, chore_id, new_balance, description)
 			VALUES (
 				-amount,
-				(SELECT person_id FROM assignment WHERE assignment.id=NEW.assignment_id),
-				(SELECT chore_id FROM assignment WHERE assignment.id=NEW.assignment_id),
+				(SELECT person_id FROM assignment WHERE assignment.id=OLD.assignment_id),
+				(SELECT chore_id FROM assignment WHERE assignment.id=OLD.assignment_id),
 				(SELECT account_balance FROM person WHERE person.id=(
-					SELECT person_id FROM assignment WHERE assignment.id=NEW.assignment_id)),
+					SELECT person_id FROM assignment WHERE assignment.id=OLD.assignment_id)),
 				(SELECT name FROM chore WHERE id=(
-					SELECT chore_id FROM assignment WHERE assignment.id=NEW.assignment_id))
+					SELECT chore_id FROM assignment WHERE assignment.id=OLD.assignment_id))
 			);
 	END IF;
-RETURN NEW;
+RETURN OLD;
 END;
 $delete_an_accomplishment$ LANGUAGE plpgsql;
 CREATE TRIGGER delete_an_accomplishment BEFORE DELETE ON accomplishment
@@ -418,8 +418,5 @@ INSERT INTO chore_task (chore_id, task_id, task_minute_estimate, time_estimate_i
 	(27, 39, 3, true),
 	(28, 40, 3, false),
 	(29, 41, 1, false);
-
-INSERT INTO accomplishment (assignment_id, task_id, accomplished)
-	VALUES (1, 1, '2018-10-17'::date);
 
 UPDATE person SET streak=2 WHERE name='Ammon';

@@ -55,7 +55,7 @@ input[type=text], input[type=password] {
 
 /* Set a style for all buttons */
 .container button, .container a {
-	background-color: #772203;
+	background: #772203;
 	color: white;
 	padding: 14px 20px;
 	margin: 8px 0;
@@ -74,11 +74,18 @@ input[type=text], input[type=password] {
 	opacity: 0.9;
 }
 
-/* Add padding to containers */
-.choreboard {
+.container{
 	padding: 16px;
 	background: url("./images/wood.jpg") no-repeat;
 	background-size: cover;
+	color: #ffffff;
+}
+
+/* Add padding to containers */
+.choreboard {
+	background: url("./images/wood.jpg") no-repeat;
+	background-size: cover;
+	padding: 16px;
 	border-radius: 15px;
 }
 
@@ -137,7 +144,6 @@ span.psw {
 
 .choreboardBody {
 	padding: 10px 20px;
-	background: url("/images/wood.jpg") no-repeat;
 	background-size: cover;
 	border-radius: 20px;
 }
