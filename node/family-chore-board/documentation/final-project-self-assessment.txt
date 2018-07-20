@@ -1,0 +1,86 @@
+After completing the final project, please answer the questions in this text file and submit it to I-Learn.
+
+1. Name (or names of all team members, if applicable)
+  Caleb Baird
+
+2. Project Title / One sentence description:
+  Family Choreboard / A web app to track the family chores!
+
+3. Copy and paste the URL for your web application:
+  https://whispering-gorge-97298.herokuapp.com
+
+4. Copy and paste the URL for your source code repository (e.g., GitHub):
+  https://github.com/caleb5baird/cs313/tree/master/node/family-chore-board
+
+------------------------------------------------------------------------
+Please evaluate each of the following criteria according to this scale:
+
+A - Some attempt was made
+B - Developing, but significantly deficient
+C - Slightly deficient, but still mostly adequate
+D - Meets requirements
+E - Shows creativity and excels above and beyond requirements
+------------------------------------------------------------------------
+
+****************************
+* The Project
+****************************
+
+1. Professional look and feel
+  E - I feel that the parts of this that I got working look nice and feel smooth and seamless.
+
+2. Accomplishes a meaningful task / does something interesting
+  E - This is actually an app that my family is going to use when I actually finish it.
+
+3. Demonstrates understanding of Node.js and Express principles
+  D - I think this project demonstrated a good use of restful design and leverages the benefits of
+  node.js and express. I do not mark it as E because I did not set up login on the client side. So
+  although I do have the login page made (and it can be displayed by switching the display bool in
+  the root react component "Choreboard") the server is not set up to handle authentication or
+  session tracking.
+
+4. Demonstrates mastery of Client-side and Server-side communication
+  E - I think that the communication between the client and the server is really good. I think I
+  have good endpoints and that the way that they are leveraged by the client is really good.
+
+5. Overall Project
+  D - I would say that on whole I would rate this project as "meets requirements" because although I
+  did not finish even nearly all that I wanted to finish. I did show an understanding of the
+  concepts of the class. And I did get the casework done for the rest of the project.``
+
+6. Please write a short explanation / justification for selecting that category for your overall project.
+  Oh ooops see above /:
+
+7. (Optional) Any other comments about the project?
+  The reason that I was not able to finish all of the things that I planned to was because learning
+  and using react was more challenging than I thought it would be, and implementing the relation
+  with dates so that the chore board will be able to keep track of history was much more challenging
+  than I thought and required a complete refactoring of the database and the queries.
+
+*****************************************************************
+* If you completed this project as a team, please rate yourself
+* and then each member of the team using the scale above. If you
+* did this project individually, you may stop here.
+*****************************************************************
+
+The below is not applicable
+**********************
+* First for yourself:
+**********************
+
+1. Name:
+
+2. Fulfilled assigned tasks and took initiative
+
+3. Helped others learn and succeed
+
+4. Attendance and team communication
+
+5. Overall contribution
+
+6. Please write a short description of this person's contribution and justify the categories chosen.
+
+**********************************************
+* After evaluating your own contribution,
+* repeat this evaluation for each team member
+**********************************************
